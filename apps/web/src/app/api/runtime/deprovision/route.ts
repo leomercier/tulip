@@ -1,0 +1,63 @@
+import { NextRequest, NextResponse } from "next/server";
+import { adminAuth, adminDb } from "@/lib/firebase/admin";
+
+const DO_API_TOKEN = process.env.DO_API_TOKEN!;
+
+export async function POST(request: NextRequest) {
+  const authHeader = request.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  let uid: string;
+  try {
+    const token = authHeader.slice(7);
+    const decoded = await adminAuth.verifyIdToken(token);
+    uid = decoded.uid;
+  } catch {
+    return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+  }
+
+  const orgsSnap = await adminDb
+    .collection("orgs")
+    .where("ownerUid", "==", uid)
+    .limit(1)
+    .get();
+
+  if (orgsSnap.empty) {
+    return NextResponse.json({ error: "No org found" }, { status: 404 });
+  }
+
+  const orgId = orgsSnap.docs[0]!.id;
+  const runtimeDoc = await adminDb.doc(`orgs/${orgId}/runtime/default`).get();
+
+  if (!runtimeDoc.exists) {
+    return NextResponse.json({ error: "No runtime to deprovision" }, { status: 404 });
+  }
+
+  const runtime = runtimeDoc.data()!;
+  const { dropletId } = runtime;
+
+  // Mark as deleting
+  await adminDb.doc(`orgs/${orgId}/runtime/default`).update({ status: "deleting" });
+
+  // Delete DigitalOcean droplet
+  if (dropletId) {
+    const doRes = await fetch(
+      `https://api.digitalocean.com/v2/droplets/${dropletId}`,
+      {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${DO_API_TOKEN}` },
+      }
+    );
+
+    if (!doRes.ok && doRes.status !== 404) {
+      console.error("Failed to delete droplet", dropletId);
+    }
+  }
+
+  // Remove Firestore runtime record
+  await adminDb.doc(`orgs/${orgId}/runtime/default`).delete();
+
+  return NextResponse.json({ ok: true });
+}
