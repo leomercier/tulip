@@ -44,7 +44,6 @@ export function Sidebar({ user, orgs, currentOrg, onSwitchOrg, isSuperAdmin }: S
 
   async function handleSignOut() {
     await signOut();
-    document.cookie = "__session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     router.replace("/login");
   }
 

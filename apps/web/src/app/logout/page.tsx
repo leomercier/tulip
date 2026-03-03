@@ -9,12 +9,9 @@ export default function LogoutPage() {
   const router = useRouter();
 
   useEffect(() => {
-    signOut()
-      .finally(() => {
-        // Clear the session cookie used by middleware
-        document.cookie = "__session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
-        router.replace("/login");
-      });
+    signOut().finally(() => {
+      router.replace("/login");
+    });
   }, [router]);
 
   return (

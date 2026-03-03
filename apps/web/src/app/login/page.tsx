@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { signInWithGoogle, useAuth } from "@/lib/hooks/useAuth";
-import { getRedirectResult } from "firebase/auth";
-import { auth } from "@/lib/firebase/client";
 import { Flower2, Loader2 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -15,38 +13,19 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/app";
   const [signing, setSigning] = useState(false);
-  const [checkingRedirect, setCheckingRedirect] = useState(true);
 
-  // Handle return from Google redirect
+  // Redirect once Firebase confirms the user is signed in
   useEffect(() => {
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
-          // onAuthStateChanged in useAuth will fire and handle profile creation
-          // the user effect below will do the redirect
-        }
-      })
-      .catch((err: unknown) => {
-        const msg = err instanceof Error ? err.message : "Sign-in failed";
-        toast.error(msg);
-      })
-      .finally(() => {
-        setCheckingRedirect(false);
-      });
-  }, []);
-
-  // Redirect once authenticated
-  useEffect(() => {
-    if (!loading && !checkingRedirect && user) {
-      document.cookie = `__session=${Date.now()}; path=/; SameSite=Lax`;
+    if (!loading && user) {
       router.replace(next);
     }
-  }, [user, loading, checkingRedirect, router, next]);
+  }, [user, loading, router, next]);
 
   async function handleGoogleSignIn() {
     setSigning(true);
     try {
-      await signInWithGoogle(); // navigates away — page unmounts
+      await signInWithGoogle();
+      // onAuthStateChanged will fire → useEffect above redirects
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Sign-in failed";
       toast.error(msg);
@@ -54,7 +33,7 @@ function LoginForm() {
     }
   }
 
-  if (loading || checkingRedirect) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-zinc-950">
         <Loader2 className="w-6 h-6 animate-spin text-tulip-400" />
