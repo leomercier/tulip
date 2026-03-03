@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { useUserOrg, useSlackIntegration } from "@/lib/hooks/useOrg";
+import { useOrgContext } from "@/lib/context/OrgContext";
+import { useSlackIntegration } from "@/lib/hooks/useOrg";
 import { auth } from "@/lib/firebase/client";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,12 +20,10 @@ import {
 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { formatRelativeTime } from "@/lib/utils";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase/client";
 
 function IntegrationsContent() {
   const { user } = useAuth();
-  const { org, loading: orgLoading } = useUserOrg(user?.uid);
+  const { currentOrg: org, loading: orgLoading } = useOrgContext();
   const { slack, loading: slackLoading } = useSlackIntegration(org?.id);
   const searchParams = useSearchParams();
   const [connectingSlack, setConnectingSlack] = useState(false);
@@ -52,18 +51,18 @@ function IntegrationsContent() {
   async function ensureOrgExists(): Promise<string> {
     if (org) return org.id;
 
-    // Create org on first use
+    // Create org via API (also sets up member record + billing account)
     const idToken = await auth.currentUser?.getIdToken();
     if (!idToken || !user) throw new Error("Not authenticated");
 
-    const orgRef = await addDoc(collection(db, "orgs"), {
-      name: user.displayName ?? user.email ?? "My Org",
-      ownerUid: user.uid,
-      createdAt: serverTimestamp(),
-      status: "active",
+    const res = await fetch("/api/orgs/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+      body: JSON.stringify({ name: user.displayName ?? user.email ?? "My Org" }),
     });
-
-    return orgRef.id;
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error ?? "Failed to create org");
+    return data.orgId;
   }
 
   async function handleConnectSlack() {

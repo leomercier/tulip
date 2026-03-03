@@ -6,9 +6,108 @@ export interface Org {
   ownerUid: string;
   createdAt: string;
   status: OrgStatus;
+  memberCount: number;
 }
 
 export type OrgStatus = "active" | "suspended";
+
+// ─── Org Membership ───────────────────────────────────────────────────────────
+
+export type OrgRole = "owner" | "admin" | "member";
+
+/** Stored at orgs/{orgId}/members/{uid} */
+export interface OrgMember {
+  uid: string;
+  email: string;
+  displayName: string | null;
+  photoURL: string | null;
+  role: OrgRole;
+  joinedAt: string;
+}
+
+// ─── Org Invite ───────────────────────────────────────────────────────────────
+
+export type InviteStatus = "pending" | "accepted" | "expired" | "cancelled";
+
+/**
+ * Stored at orgInvites/{inviteId}.
+ * email is null for open link invites (anyone with the link can accept).
+ */
+export interface OrgInvite {
+  id: string;
+  orgId: string;
+  orgName: string;
+  invitedByUid: string;
+  invitedByName: string | null;
+  /** null = open link invite */
+  email: string | null;
+  role: OrgRole;
+  status: InviteStatus;
+  createdAt: string;
+  expiresAt: string;
+  acceptedByUid: string | null;
+  acceptedAt: string | null;
+}
+
+// ─── User Profile ─────────────────────────────────────────────────────────────
+
+/** Stored at users/{uid} — created on first sign-in */
+export interface UserProfile {
+  uid: string;
+  email: string;
+  displayName: string | null;
+  photoURL: string | null;
+  superAdmin: boolean;
+  /** Org IDs this user is a member of */
+  orgIds: string[];
+  createdAt: string;
+}
+
+// ─── Billing ──────────────────────────────────────────────────────────────────
+
+export type BillingStatus = "active" | "suspended" | "grace";
+
+/**
+ * Stored at orgs/{orgId}/billing/account.
+ * Credits are integer units: 1 credit = $0.01 USD.
+ * e.g. 10000 credits = $100.
+ */
+export interface BillingAccount {
+  orgId: string;
+  credits: number;
+  currencyCode: string;
+  status: BillingStatus;
+  createdAt: string;
+  updatedAt: string;
+  // stripeCustomerId: string | null;   // reserved for future Stripe integration
+  // stripeSubscriptionId: string | null;
+}
+
+export type LedgerEntryType =
+  | "credit_grant"    // admin manually adds credits
+  | "credit_purchase" // future: Stripe checkout
+  | "runtime_usage"   // per-hour runtime charge
+  | "api_usage"       // per-token AI inference charge
+  | "adjustment";     // manual correction
+
+/**
+ * Stored at orgs/{orgId}/billing/ledger/entries/{entryId}.
+ * Positive amount = credits added; negative = credits consumed.
+ */
+export interface LedgerEntry {
+  id: string;
+  orgId: string;
+  type: LedgerEntryType;
+  /** Positive = credit in, negative = debit out */
+  amount: number;
+  /** Running balance after this entry */
+  balanceAfter: number;
+  description: string;
+  createdAt: string;
+  /** null for automated/system entries */
+  createdByUid: string | null;
+  metadata: Record<string, unknown>;
+}
 
 // ─── Slack Integration ────────────────────────────────────────────────────────
 

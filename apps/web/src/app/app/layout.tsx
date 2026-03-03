@@ -5,13 +5,15 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { useUserOrg } from "@/lib/hooks/useOrg";
+import { OrgProvider } from "@/lib/context/OrgContext";
+import { useOrgContext } from "@/lib/context/OrgContext";
 import { Toaster } from "react-hot-toast";
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+/** Inner layout — needs OrgProvider already mounted */
+function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
+  const { orgs, currentOrg, loading: orgLoading, profile, setCurrentOrgId } = useOrgContext();
   const router = useRouter();
-  const { org, loading: orgLoading } = useUserOrg(user?.uid);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -38,10 +40,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         position="top-right"
         toastOptions={{ className: "!bg-zinc-800 !text-zinc-100 !border !border-zinc-700" }}
       />
-      <Sidebar user={user} orgName={org?.name} />
-      <main className="flex-1 overflow-y-auto">
-        {children}
-      </main>
+      <Sidebar
+        user={user}
+        orgs={orgs}
+        currentOrg={currentOrg}
+        onSwitchOrg={setCurrentOrgId}
+        isSuperAdmin={profile?.superAdmin ?? false}
+      />
+      <main className="flex-1 overflow-y-auto">{children}</main>
     </div>
+  );
+}
+
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+
+  return (
+    <OrgProvider uid={user?.uid ?? null}>
+      <AppLayoutInner>{children}</AppLayoutInner>
+    </OrgProvider>
   );
 }

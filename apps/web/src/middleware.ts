@@ -1,18 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // Routes that require authentication
-const PROTECTED_PREFIXES = ["/app"];
+const PROTECTED_PREFIXES = ["/app", "/admin"];
 // Routes that should redirect to /app if already authenticated
 const AUTH_ROUTES = ["/login", "/"];
+// Public routes that must NOT be gated (invite acceptance pages)
+const PUBLIC_PREFIXES = ["/invite"];
 
 export function middleware(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
 
-  // The session cookie is set client-side via Firebase Auth.
-  // We use a lightweight __session cookie set on sign-in to drive
-  // server-side redirects without exposing Firebase internals.
   const sessionCookie = request.cookies.get("__session")?.value;
   const isAuthenticated = Boolean(sessionCookie);
+
+  // Explicitly public paths — let them through unconditionally
+  if (PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))) {
+    return NextResponse.next();
+  }
 
   const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
   const isAuthRoute = AUTH_ROUTES.includes(pathname);
@@ -35,10 +39,6 @@ export function middleware(request: NextRequest): NextResponse {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except static files and api routes that
-     * handle their own auth.
-     */
     "/((?!_next/static|_next/image|favicon.ico|api/).*)",
   ],
 };
