@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminAuth, adminDb } from "@/lib/firebase/admin";
+import { deleteTunnel } from "@/lib/cloudflare";
 
 const DO_API_TOKEN = process.env.DO_API_TOKEN!;
 
@@ -53,6 +54,16 @@ export async function POST(request: NextRequest) {
     if (!doRes.ok && doRes.status !== 404) {
       console.error("Failed to delete droplet", dropletId);
     }
+  }
+
+  // Delete Cloudflare tunnel and DNS record
+  const cfDoc = await adminDb.doc(`orgs/${orgId}/cloudflare/tunnel`).get();
+  if (cfDoc.exists) {
+    const { tunnelId } = cfDoc.data()!;
+    await deleteTunnel(tunnelId, instanceId).catch((err: unknown) =>
+      console.error("Tunnel delete error:", err)
+    );
+    await cfDoc.ref.delete();
   }
 
   // Remove Firestore records

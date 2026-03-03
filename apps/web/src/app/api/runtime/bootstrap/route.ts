@@ -3,6 +3,7 @@ import { adminDb } from "@/lib/firebase/admin";
 import { FieldValue } from "firebase-admin/firestore";
 import { createDecipheriv, randomBytes } from "crypto";
 import type { BootstrapRequest, BootstrapResponse, InferenceConfig } from "@tulip/types";
+import { createTunnel } from "@/lib/cloudflare";
 
 const ENCRYPTION_KEY = process.env.TOKEN_ENCRYPTION_KEY ?? "";
 const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE ?? "ghcr.io/tulipai/openclaw:latest";
@@ -74,13 +75,26 @@ export async function POST(request: NextRequest) {
         allowedTools: ["web_search", "code_execution"],
       };
 
-  // Fetch or create Cloudflare tunnel token
-  const cfDoc = await adminDb.doc(`orgs/${orgId}/cloudflare/tunnel`).get();
-  const cloudflareTunnelToken = cfDoc.exists ? cfDoc.data()?.tunnelToken ?? "" : "";
-
-  // Generate a runtime auth token for subsequent agent calls
+  // Create or reuse Cloudflare tunnel
   const runtimeAuthToken = randomBytes(32).toString("hex");
   const hostname = `${instanceId}.${RUNTIME_BASE_DOMAIN}`;
+
+  const cfDoc = await adminDb.doc(`orgs/${orgId}/cloudflare/tunnel`).get();
+  let cloudflareTunnelToken: string;
+
+  if (cfDoc.exists && cfDoc.data()?.instanceId === instanceId) {
+    // Reuse existing tunnel (e.g. rebootstrap command)
+    cloudflareTunnelToken = cfDoc.data()!.tunnelToken;
+  } else {
+    // First bootstrap: create tunnel, configure ingress + DNS
+    const tunnel = await createTunnel(instanceId);
+    cloudflareTunnelToken = tunnel.token;
+    await adminDb.doc(`orgs/${orgId}/cloudflare/tunnel`).set({
+      tunnelId: tunnel.id,
+      tunnelToken: tunnel.token,
+      instanceId,
+    });
+  }
 
   // Clear bootstrap token (one-time use) and store runtime auth token
   await rtDoc.ref.update({

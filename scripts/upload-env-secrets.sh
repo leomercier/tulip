@@ -42,16 +42,21 @@ else
   echo "✓ Created secret '$SECRET_NAME'"
 fi
 
-# Grant Cloud Build service account access
+# Grant both Cloud Build service accounts access.
+# New GCP projects use the Compute Engine default SA for Cloud Build;
+# older projects use PROJECT_NUMBER@cloudbuild.gserviceaccount.com.
 PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format="value(projectNumber)")
 CB_SA="${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com"
+COMPUTE_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
 
 echo ""
-echo "→ Granting secretAccessor to Cloud Build SA: $CB_SA"
-gcloud secrets add-iam-policy-binding "$SECRET_NAME" \
-  --project="$PROJECT_ID" \
-  --member="serviceAccount:$CB_SA" \
-  --role="roles/secretmanager.secretAccessor"
+for SA in "$CB_SA" "$COMPUTE_SA"; do
+  echo "→ Granting secretAccessor to: $SA"
+  gcloud secrets add-iam-policy-binding "$SECRET_NAME" \
+    --project="$PROJECT_ID" \
+    --member="serviceAccount:$SA" \
+    --role="roles/secretmanager.secretAccessor"
+done
 
 echo ""
 echo "✓ Done. Cloud Build can now read '$SECRET_NAME' from Secret Manager."

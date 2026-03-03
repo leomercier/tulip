@@ -41,6 +41,7 @@ export interface TunnelResult {
 
 /**
  * Create a named Cloudflare Tunnel for a given instance.
+ * Configures ingress to localhost:3000 (OpenClaw) and creates a CNAME DNS record.
  * Returns the tunnel token that cloudflared uses to authenticate.
  */
 export async function createTunnel(instanceId: string): Promise<TunnelResult> {
@@ -48,33 +49,26 @@ export async function createTunnel(instanceId: string): Promise<TunnelResult> {
   const tunnel = await cfRequest<TunnelResult>(
     `/accounts/${accountId}/cfd_tunnel`,
     "POST",
-    {
-      name: instanceId,
-      config_src: "cloudflare",
-    }
+    { name: instanceId, config_src: "cloudflare" }
   );
 
-  // Configure the tunnel ingress to route to localhost:3000 (OpenClaw)
   const hostname = `${instanceId}.${process.env.CF_TUNNEL_HOSTNAME_ZONE ?? "agents.tulip.ai"}`;
+
+  // Configure tunnel ingress: route hostname → localhost:3000, 404 everything else
   await cfRequest(
     `/accounts/${accountId}/cfd_tunnel/${tunnel.id}/configurations`,
     "PUT",
     {
       config: {
         ingress: [
-          {
-            hostname,
-            service: "http://localhost:3000",
-          },
-          {
-            service: "http_status:404",
-          },
+          { hostname, service: "http://localhost:3000" },
+          { service: "http_status:404" },
         ],
       },
     }
   );
 
-  // Create DNS CNAME pointing the subdomain to the tunnel
+  // Create CNAME pointing the subdomain to the tunnel
   const zoneId = process.env.CF_ZONE_ID;
   if (zoneId) {
     await cfRequest(`/zones/${zoneId}/dns_records`, "POST", {
@@ -84,7 +78,7 @@ export async function createTunnel(instanceId: string): Promise<TunnelResult> {
       ttl: 1,
       proxied: true,
     }).catch((err: unknown) => {
-      // CNAME may already exist — non-fatal
+      // CNAME may already exist on re-bootstrap — non-fatal
       console.warn("DNS CNAME creation warning:", err);
     });
   }
@@ -93,32 +87,28 @@ export async function createTunnel(instanceId: string): Promise<TunnelResult> {
 }
 
 /**
- * Delete a Cloudflare Tunnel and its DNS record.
+ * Delete a Cloudflare Tunnel and its CNAME DNS record.
  */
 export async function deleteTunnel(tunnelId: string, instanceId: string): Promise<void> {
   const accountId = cfAccountId();
-
-  // Delete DNS record first
   const zoneId = process.env.CF_ZONE_ID;
+
+  // Delete the CNAME DNS record first
   if (zoneId) {
     const hostname = `${instanceId}.${process.env.CF_TUNNEL_HOSTNAME_ZONE ?? "agents.tulip.ai"}`;
     const records = await cfRequest<Array<{ id: string; name: string }>>(
       `/zones/${zoneId}/dns_records?name=${hostname}`
     );
     for (const record of records) {
-      await cfRequest(`/zones/${zoneId}/dns_records/${record.id}`, "DELETE").catch(
-        () => null
-      );
+      await cfRequest(`/zones/${zoneId}/dns_records/${record.id}`, "DELETE").catch(() => null);
     }
   }
 
-  // Clean up any active connections then delete tunnel
+  // Drain active connections then delete tunnel
   await cfRequest(
     `/accounts/${accountId}/cfd_tunnel/${tunnelId}/connections`,
     "DELETE"
   ).catch(() => null);
 
-  await cfRequest(`/accounts/${accountId}/cfd_tunnel/${tunnelId}`, "DELETE").catch(
-    () => null
-  );
+  await cfRequest(`/accounts/${accountId}/cfd_tunnel/${tunnelId}`, "DELETE").catch(() => null);
 }
