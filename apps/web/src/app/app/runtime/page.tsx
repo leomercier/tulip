@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { useUserOrg, useRuntime, useSlackIntegration } from "@/lib/hooks/useOrg";
+import { useUserOrg, useRuntime, useSlackIntegration, useCommandHistory } from "@/lib/hooks/useOrg";
 import { RuntimeIframe } from "@/components/runtime/RuntimeIframe";
 import { ProvisionPanel } from "@/components/runtime/ProvisionPanel";
+import { HealthStatus } from "@/components/runtime/HealthStatus";
+import { CommandPanel } from "@/components/runtime/CommandPanel";
 import { StatusBadge } from "@/components/ui/badge";
 import { Loader2, LayoutGrid, SplitSquareVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,6 +19,7 @@ export default function RuntimePage() {
   const { org, loading: orgLoading } = useUserOrg(user?.uid);
   const { runtime, loading: runtimeLoading } = useRuntime(org?.id);
   const { slack } = useSlackIntegration(org?.id);
+  const { commands } = useCommandHistory(runtime?.instanceId);
   const [viewMode, setViewMode] = useState<ViewMode>("split");
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -31,8 +34,11 @@ export default function RuntimePage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-0px)] overflow-hidden">
-      <Toaster position="top-right" toastOptions={{ className: "!bg-zinc-800 !text-zinc-100 !border !border-zinc-700" }} />
+    <div className="flex flex-col h-screen overflow-hidden">
+      <Toaster
+        position="top-right"
+        toastOptions={{ className: "!bg-zinc-800 !text-zinc-100 !border !border-zinc-700" }}
+      />
 
       {/* Page header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur shrink-0">
@@ -51,7 +57,7 @@ export default function RuntimePage() {
             {(
               [
                 { mode: "split" as ViewMode, icon: SplitSquareVertical, label: "Split view" },
-                { mode: "full" as ViewMode, icon: LayoutGrid, label: "Full iframe" },
+                { mode: "full" as ViewMode, icon: LayoutGrid, label: "Full view" },
               ] as const
             ).map(({ mode, icon: Icon, label }) => (
               <button
@@ -75,7 +81,6 @@ export default function RuntimePage() {
 
       {/* Content */}
       {!isReady ? (
-        // Show provision panel when not ready
         <div className="flex-1 overflow-y-auto">
           <ProvisionPanel
             runtime={runtime}
@@ -84,7 +89,6 @@ export default function RuntimePage() {
           />
         </div>
       ) : viewMode === "full" ? (
-        // Full iframe
         <div className="flex-1 overflow-hidden">
           <RuntimeIframe
             key={refreshKey}
@@ -93,14 +97,16 @@ export default function RuntimePage() {
           />
         </div>
       ) : (
-        // Split: info panel left, iframe right
+        // Split: sidebar left with health + commands, iframe right
         <div className="flex flex-1 overflow-hidden">
-          <div className="w-72 shrink-0 overflow-y-auto border-r border-zinc-800">
-            <ProvisionPanel
-              runtime={runtime}
-              hasSlack={Boolean(slack)}
-              onProvisioned={() => setRefreshKey((k) => k + 1)}
-            />
+          <div className="w-72 shrink-0 overflow-y-auto border-r border-zinc-800 scrollbar-none">
+            <div className="p-4 space-y-4">
+              <HealthStatus runtime={runtime} />
+              <CommandPanel
+                instanceId={runtime.instanceId}
+                commands={commands}
+              />
+            </div>
           </div>
           <div className="flex-1 overflow-hidden">
             <RuntimeIframe

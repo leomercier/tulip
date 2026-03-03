@@ -1,31 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import { FieldValue } from "firebase-admin/firestore";
+import type { HeartbeatPayload } from "@tulip/types";
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const { instanceId, status } = body as {
-    instanceId?: string;
-    status?: string;
+  const body = (await request.json()) as Partial<HeartbeatPayload>;
+  const { instanceId, orgId, authToken, checks, version } = body;
+
+  if (!instanceId || !orgId || !authToken) {
+    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  const rtDoc = await adminDb.doc(`orgs/${orgId}/runtime/current`).get();
+
+  if (!rtDoc.exists || rtDoc.data()?.instanceId !== instanceId) {
+    return NextResponse.json({ error: "Instance not found" }, { status: 404 });
+  }
+
+  // Validate runtime auth token
+  if (rtDoc.data()?.runtimeAuthToken !== authToken) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const currentStatus: string = rtDoc.data()?.status ?? "booting";
+  const openclawOk = checks?.openclaw?.ok ?? null;
+  const cloudflaredOk = checks?.cloudflared?.ok ?? null;
+
+  const update: Record<string, unknown> = {
+    lastHeartbeatAt: FieldValue.serverTimestamp(),
+    openclawHealthy: openclawOk,
+    cloudflaredHealthy: cloudflaredOk,
   };
 
-  if (!instanceId) {
-    return NextResponse.json({ error: "instanceId required" }, { status: 400 });
+  // Auto-transition booting → ready on first healthy heartbeat
+  if (currentStatus === "booting" && openclawOk && cloudflaredOk) {
+    update.status = "ready";
   }
 
-  // Find runtime by instanceId
-  const orgsSnap = await adminDb.collection("orgs").get();
+  await rtDoc.ref.update(update);
 
-  for (const orgDoc of orgsSnap.docs) {
-    const rtDoc = await adminDb.doc(`orgs/${orgDoc.id}/runtime/default`).get();
-    if (rtDoc.exists && rtDoc.data()?.instanceId === instanceId) {
-      await rtDoc.ref.update({
-        lastHeartbeat: FieldValue.serverTimestamp(),
-        ...(status ? { status } : {}),
-      });
-      return NextResponse.json({ ok: true });
-    }
+  // Update instance-level metadata
+  if (version) {
+    await adminDb.doc(`runtimes/${instanceId}`).set(
+      {
+        agentVersion: version.agent ?? null,
+        openclawImage: version.openclawImage ?? null,
+        lastSeenAt: FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
   }
 
-  return NextResponse.json({ error: "Instance not found" }, { status: 404 });
+  return NextResponse.json({ ok: true });
 }

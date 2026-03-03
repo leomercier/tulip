@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
     ];
   },
   // Transpile workspace packages
-  transpilePackages: ["@tulip/types"],
+  transpilePackages: ["@tulip/types", "@tulip/cloud-init"],
 };
 
 export default nextConfig;

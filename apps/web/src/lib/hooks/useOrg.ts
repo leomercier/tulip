@@ -7,11 +7,12 @@ import {
   where,
   onSnapshot,
   doc,
-  getDoc,
+  orderBy,
+  limit,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
-import { orgConverter, runtimeConverter, slackConverter } from "@/lib/firebase/converters";
-import type { Org, Runtime, SlackIntegration } from "@tulip/types";
+import { orgConverter, runtimeConverter, slackConverter, commandConverter } from "@/lib/firebase/converters";
+import type { Org, Runtime, SlackIntegration, RuntimeCommand } from "@tulip/types";
 
 export function useUserOrg(uid: string | undefined) {
   const [org, setOrg] = useState<Org | null>(null);
@@ -30,11 +31,7 @@ export function useUserOrg(uid: string | undefined) {
     );
 
     const unsubscribe = onSnapshot(q, (snap) => {
-      if (snap.empty) {
-        setOrg(null);
-      } else {
-        setOrg(snap.docs[0]!.data());
-      }
+      setOrg(snap.empty ? null : snap.docs[0]!.data());
       setLoading(false);
     });
 
@@ -55,9 +52,8 @@ export function useRuntime(orgId: string | undefined) {
       return;
     }
 
-    const ref = doc(db, "orgs", orgId, "runtime", "default").withConverter(
-      runtimeConverter
-    );
+    // orgs/{orgId}/runtime/current (updated from /default)
+    const ref = doc(db, "orgs", orgId, "runtime", "current").withConverter(runtimeConverter);
 
     const unsubscribe = onSnapshot(ref, (snap) => {
       setRuntime(snap.exists() ? snap.data() : null);
@@ -81,13 +77,7 @@ export function useSlackIntegration(orgId: string | undefined) {
       return;
     }
 
-    const ref = doc(
-      db,
-      "orgs",
-      orgId,
-      "integrations",
-      "slack"
-    ).withConverter(slackConverter);
+    const ref = doc(db, "orgs", orgId, "integrations", "slack").withConverter(slackConverter);
 
     const unsubscribe = onSnapshot(ref, (snap) => {
       setSlack(snap.exists() ? snap.data() : null);
@@ -98,4 +88,33 @@ export function useSlackIntegration(orgId: string | undefined) {
   }, [orgId]);
 
   return { slack, loading };
+}
+
+export function useCommandHistory(instanceId: string | undefined) {
+  const [commands, setCommands] = useState<RuntimeCommand[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!instanceId) {
+      setCommands([]);
+      setLoading(false);
+      return;
+    }
+
+    // runtimes/{instanceId}/commands — real-time listener
+    const q = query(
+      collection(db, "runtimes", instanceId, "commands").withConverter(commandConverter),
+      orderBy("createdAt", "desc"),
+      limit(20)
+    );
+
+    const unsubscribe = onSnapshot(q, (snap) => {
+      setCommands(snap.docs.map((d) => d.data()));
+      setLoading(false);
+    });
+
+    return unsubscribe;
+  }, [instanceId]);
+
+  return { commands, loading };
 }

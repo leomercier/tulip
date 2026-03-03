@@ -29,17 +29,17 @@ export async function POST(request: NextRequest) {
   }
 
   const orgId = orgsSnap.docs[0]!.id;
-  const runtimeDoc = await adminDb.doc(`orgs/${orgId}/runtime/default`).get();
+  const runtimeDoc = await adminDb.doc(`orgs/${orgId}/runtime/current`).get();
 
   if (!runtimeDoc.exists) {
     return NextResponse.json({ error: "No runtime to deprovision" }, { status: 404 });
   }
 
   const runtime = runtimeDoc.data()!;
-  const { dropletId } = runtime;
+  const { dropletId, instanceId } = runtime;
 
   // Mark as deleting
-  await adminDb.doc(`orgs/${orgId}/runtime/default`).update({ status: "deleting" });
+  await adminDb.doc(`orgs/${orgId}/runtime/current`).update({ status: "deleting" });
 
   // Delete DigitalOcean droplet
   if (dropletId) {
@@ -50,14 +50,16 @@ export async function POST(request: NextRequest) {
         headers: { Authorization: `Bearer ${DO_API_TOKEN}` },
       }
     );
-
     if (!doRes.ok && doRes.status !== 404) {
       console.error("Failed to delete droplet", dropletId);
     }
   }
 
-  // Remove Firestore runtime record
-  await adminDb.doc(`orgs/${orgId}/runtime/default`).delete();
+  // Remove Firestore records
+  await adminDb.doc(`orgs/${orgId}/runtime/current`).delete();
+  if (instanceId) {
+    await adminDb.doc(`runtimes/${instanceId}`).delete().catch(() => null);
+  }
 
   return NextResponse.json({ ok: true });
 }

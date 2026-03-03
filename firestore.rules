@@ -1,0 +1,52 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Orgs ──────────────────────────────────────────────────────────────────
+    match /orgs/{orgId} {
+      // Only the org owner can read/write their org
+      allow read, write: if request.auth != null
+        && request.auth.uid == resource.data.ownerUid;
+
+      // Integrations sub-collection
+      match /integrations/{integration} {
+        allow read: if request.auth != null
+          && request.auth.uid == get(/databases/$(database)/documents/orgs/$(orgId)).data.ownerUid;
+        // Write only from Cloud Functions (server-side)
+        allow write: if false;
+      }
+
+      // Runtime sub-document
+      match /runtime/{doc} {
+        allow read: if request.auth != null
+          && request.auth.uid == get(/databases/$(database)/documents/orgs/$(orgId)).data.ownerUid;
+        // Write only from Cloud Functions
+        allow write: if false;
+      }
+
+      // Inference config
+      match /inference/{doc} {
+        allow read: if request.auth != null
+          && request.auth.uid == get(/databases/$(database)/documents/orgs/$(orgId)).data.ownerUid;
+        allow write: if false;
+      }
+
+      // Cloudflare tunnel info (sensitive — no client reads)
+      match /cloudflare/{doc} {
+        allow read, write: if false;
+      }
+    }
+
+    // ── Runtimes (instance-scoped metadata + commands) ─────────────────────────
+    match /runtimes/{instanceId} {
+      // No direct client access — all via Cloud Functions
+      allow read, write: if false;
+
+      match /commands/{commandId} {
+        allow read, write: if false;
+      }
+    }
+
+  }
+}
