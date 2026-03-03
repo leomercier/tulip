@@ -1,6 +1,4 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+const nextConfig = {
   // Allow embedding OpenClaw runtime iframes
   async headers() {
     return [
@@ -9,22 +7,22 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: "X-Frame-Options",
-            value: "SAMEORIGIN",
+            value: "SAMEORIGIN"
           },
           {
             key: "X-Content-Type-Options",
-            value: "nosniff",
+            value: "nosniff"
           },
           {
             key: "Referrer-Policy",
-            value: "strict-origin-when-cross-origin",
-          },
-        ],
-      },
+            value: "strict-origin-when-cross-origin"
+          }
+        ]
+      }
     ];
   },
   // Transpile workspace packages
-  transpilePackages: ["@tulip/types", "@tulip/cloud-init"],
+  transpilePackages: ["@tulip/types", "@tulip/cloud-init"]
 };
 
 export default nextConfig;
