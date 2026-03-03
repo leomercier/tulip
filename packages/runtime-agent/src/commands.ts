@@ -51,12 +51,25 @@ async function pollCommands(): Promise<QueuedCommand[]> {
 }
 
 async function reportResult(payload: CommandResultPayload): Promise<void> {
-  await fetch(`${config.controlPlaneBaseUrl}/api/runtime/commandResult`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(8_000),
-  });
+  // Retry up to 3 times — a failed report would leave the command stuck in "running"
+  const delays = [0, 3000, 8000];
+  for (const delay of delays) {
+    if (delay > 0) await new Promise((r) => setTimeout(r, delay));
+    try {
+      const res = await fetch(`${config.controlPlaneBaseUrl}/api/runtime/commandResult`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(8_000),
+      });
+      if (res.ok) return;
+      console.error(`[commands] reportResult HTTP ${res.status}`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`[commands] reportResult attempt failed: ${msg}`);
+    }
+  }
+  console.error(`[commands] reportResult gave up for command ${payload.commandId}`);
 }
 
 async function executeCommand(cmd: QueuedCommand): Promise<void> {

@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
   }
 
   const orgId = orgsSnap.docs[0]!.id;
-  const runtimeDoc = await adminDb.doc(`orgs/${orgId}/runtime/default`).get();
+  const runtimeDoc = await adminDb.doc(`orgs/${orgId}/runtime/current`).get();
 
   return NextResponse.json({
     orgId,

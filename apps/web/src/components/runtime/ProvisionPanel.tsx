@@ -239,8 +239,8 @@ export function ProvisionPanel({ runtime, hasSlack, onProvisioned }: ProvisionPa
                 },
                 {
                   label: "Last heartbeat",
-                  value: runtime.lastHeartbeat
-                    ? formatRelativeTime(runtime.lastHeartbeat)
+                  value: runtime.lastHeartbeatAt
+                    ? formatRelativeTime(runtime.lastHeartbeatAt)
                     : "—",
                 },
               ].map(({ label, value, mono, link }) => (

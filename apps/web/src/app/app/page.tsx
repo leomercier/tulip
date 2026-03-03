@@ -101,9 +101,9 @@ export default function AppOverviewPage() {
                 <p className="text-xs font-mono text-zinc-500">
                   {runtime.instanceId}
                 </p>
-                {runtime.lastHeartbeat && (
+                {runtime.lastHeartbeatAt && (
                   <p className="text-xs text-zinc-600">
-                    Last seen {formatRelativeTime(runtime.lastHeartbeat)}
+                    Last seen {formatRelativeTime(runtime.lastHeartbeatAt)}
                   </p>
                 )}
               </div>

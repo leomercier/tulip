@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
 
       if (slackDoc.exists && slackDoc.data()?.teamId === teamId) {
         // Queue deletion via Firestore — Cloud Function handles actual droplet teardown
-        await adminDb.doc(`orgs/${orgDoc.id}/runtime/default`).set(
+        await adminDb.doc(`orgs/${orgDoc.id}/runtime/current`).set(
           { status: "deleting" },
           { merge: true }
         );

@@ -4,14 +4,21 @@ import { FieldValue } from "firebase-admin/firestore";
 import { createDecipheriv, randomBytes } from "crypto";
 import type { BootstrapRequest, BootstrapResponse, InferenceConfig } from "@tulip/types";
 
-const ENCRYPTION_KEY = process.env.TOKEN_ENCRYPTION_KEY!;
+const ENCRYPTION_KEY = process.env.TOKEN_ENCRYPTION_KEY ?? "";
 const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE ?? "ghcr.io/tulipai/openclaw:latest";
 const RUNTIME_BASE_DOMAIN = process.env.NEXT_PUBLIC_RUNTIME_BASE_DOMAIN ?? "agents.tulip.ai";
+
+function getEncryptionKey(): Buffer {
+  if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length !== 64) {
+    throw new Error("TOKEN_ENCRYPTION_KEY must be a 32-byte (64 hex char) value");
+  }
+  return Buffer.from(ENCRYPTION_KEY, "hex");
+}
 
 function decryptToken(ciphertext: string): string {
   const [ivB64, authTagB64, dataB64] = ciphertext.split(":");
   if (!ivB64 || !authTagB64 || !dataB64) throw new Error("Invalid ciphertext");
-  const key = Buffer.from(ENCRYPTION_KEY, "hex");
+  const key = getEncryptionKey();
   const decipher = createDecipheriv("aes-256-gcm", key, Buffer.from(ivB64, "base64"));
   decipher.setAuthTag(Buffer.from(authTagB64, "base64"));
   return Buffer.concat([
