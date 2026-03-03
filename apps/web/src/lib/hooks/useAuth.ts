@@ -20,14 +20,20 @@ export function useAuth(): AuthState {
   const [state, setState] = useState<AuthState>({ user: null, loading: true });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // Resolve loading immediately — don't block on Firestore writes
-      setState({ user, loading: false });
-      if (user) {
-        // Fire-and-forget: create/update profile doc in the background
-        ensureUserProfile(user).catch(() => {});
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (user) => {
+        setState({ user, loading: false });
+        if (user) {
+          ensureUserProfile(user).catch(() => {});
+        }
+      },
+      (error) => {
+        // Auth initialisation failed (e.g. missing/invalid Firebase config)
+        console.error("[useAuth] onAuthStateChanged error:", error);
+        setState({ user: null, loading: false });
       }
-    });
+    );
     return unsubscribe;
   }, []);
 
