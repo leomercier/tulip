@@ -20,7 +20,6 @@ export function useAuth(): AuthState {
   const [state, setState] = useState<AuthState>({ user: null, loading: true });
 
   useEffect(() => {
-<<<<<<< HEAD
     const unsubscribe = onAuthStateChanged(
       auth,
       (user) => {
@@ -33,13 +32,6 @@ export function useAuth(): AuthState {
         // Auth initialisation failed (e.g. missing/invalid Firebase config)
         console.error("[useAuth] onAuthStateChanged error:", error);
         setState({ user: null, loading: false });
-=======
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      console.log("Auth state changed:", user);
-      if (user) {
-        // Ensure a UserProfile document exists — create on first sign-in
-        await ensureUserProfile(user);
->>>>>>> af13161 (sort bugs)
       }
     );
     return unsubscribe;
