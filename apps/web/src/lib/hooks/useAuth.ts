@@ -20,12 +20,13 @@ export function useAuth(): AuthState {
   const [state, setState] = useState<AuthState>({ user: null, loading: true });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        // Ensure a UserProfile document exists — create on first sign-in
-        await ensureUserProfile(user);
-      }
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      // Resolve loading immediately — don't block on Firestore writes
       setState({ user, loading: false });
+      if (user) {
+        // Fire-and-forget: create/update profile doc in the background
+        ensureUserProfile(user).catch(() => {});
+      }
     });
     return unsubscribe;
   }, []);
