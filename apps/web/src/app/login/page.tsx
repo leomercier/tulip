@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { signInWithGoogle, useAuth } from "@/lib/hooks/useAuth";
+import { getRedirectResult } from "firebase/auth";
+import { auth } from "@/lib/firebase/client";
 import { Flower2, Loader2 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -13,19 +15,38 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/app";
   const [signing, setSigning] = useState(false);
+  const [checkingRedirect, setCheckingRedirect] = useState(true);
 
+  // Handle return from Google redirect
   useEffect(() => {
-    if (!loading && user) {
-      // Set lightweight session cookie so middleware can verify auth
-      document.cookie = `__session=${Date.now()}; path=/; SameSite=Lax; Secure`;
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          // onAuthStateChanged in useAuth will fire and handle profile creation
+          // the user effect below will do the redirect
+        }
+      })
+      .catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : "Sign-in failed";
+        toast.error(msg);
+      })
+      .finally(() => {
+        setCheckingRedirect(false);
+      });
+  }, []);
+
+  // Redirect once authenticated
+  useEffect(() => {
+    if (!loading && !checkingRedirect && user) {
+      document.cookie = `__session=${Date.now()}; path=/; SameSite=Lax`;
       router.replace(next);
     }
-  }, [user, loading, router, next]);
+  }, [user, loading, checkingRedirect, router, next]);
 
   async function handleGoogleSignIn() {
     setSigning(true);
     try {
-      await signInWithGoogle();
+      await signInWithGoogle(); // navigates away — page unmounts
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Sign-in failed";
       toast.error(msg);
@@ -33,9 +54,9 @@ function LoginForm() {
     }
   }
 
-  if (loading) {
+  if (loading || checkingRedirect) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-zinc-950">
         <Loader2 className="w-6 h-6 animate-spin text-tulip-400" />
       </div>
     );
@@ -62,9 +83,9 @@ function LoginForm() {
         {/* Card */}
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-8 shadow-xl backdrop-blur">
           <div className="space-y-2 mb-6">
-            <h2 className="text-lg font-medium text-zinc-100">Sign in</h2>
+            <h2 className="text-lg font-medium text-zinc-100">Get started</h2>
             <p className="text-sm text-zinc-500">
-              Access your organisation&apos;s runtime dashboard.
+              Sign in to your account, or create one if you&apos;re new.
             </p>
           </div>
 
@@ -82,7 +103,7 @@ function LoginForm() {
           </button>
 
           <p className="mt-6 text-center text-xs text-zinc-600">
-            By signing in you agree to our terms of service.
+            By continuing you agree to our terms of service.
           </p>
         </div>
 
@@ -121,7 +142,7 @@ function GoogleIcon() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-zinc-950">
         <Loader2 className="w-6 h-6 animate-spin text-tulip-400" />
       </div>
     }>

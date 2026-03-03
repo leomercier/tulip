@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   onAuthStateChanged,
-  signInWithPopup,
+  signInWithRedirect,
   GoogleAuthProvider,
   signOut as firebaseSignOut,
   type User,
@@ -86,7 +86,7 @@ async function ensureUserProfile(user: User): Promise<void> {
 
 export async function signInWithGoogle(): Promise<void> {
   const provider = new GoogleAuthProvider();
-  await signInWithPopup(auth, provider);
+  await signInWithRedirect(auth, provider);
 }
 
 export async function signOut(): Promise<void> {
