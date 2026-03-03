@@ -4,8 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 const PROTECTED_PREFIXES = ["/app", "/admin"];
 // Routes that should redirect to /app if already authenticated
 const AUTH_ROUTES = ["/login", "/"];
-// Public routes that must NOT be gated (invite acceptance pages)
-const PUBLIC_PREFIXES = ["/invite"];
+// Public routes that must NOT be gated (invite acceptance pages, logout)
+const PUBLIC_PREFIXES = ["/invite", "/logout"];
 
 export function middleware(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
