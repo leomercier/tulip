@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Copy workspace manifests first for layer caching
 COPY package.json pnpm-workspace.yaml turbo.json ./
-COPY pnpm-lock.yaml* ./
+COPY pnpm-lock.yaml ./
 
 # All workspace package.json files must be present for pnpm workspace resolution
 COPY apps/web/package.json ./apps/web/
@@ -16,19 +16,13 @@ COPY packages/cloud-init/package.json ./packages/cloud-init/
 COPY packages/runtime-agent/package.json ./packages/runtime-agent/
 COPY functions/package.json ./functions/
 
-RUN pnpm install --no-frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # ---- Build ----
-FROM base AS builder
-WORKDIR /app
+# Extend deps so all node_modules (including per-package symlinks) are already present
+FROM deps AS builder
 
-# Copy the full node_modules virtual store from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/package.json ./package.json
-COPY --from=deps /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
-
-# Copy source for packages in the web dependency graph only
-COPY turbo.json ./
+# Overlay source files on top of the installed workspace
 COPY apps/web ./apps/web
 COPY packages ./packages
 

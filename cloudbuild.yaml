@@ -1,6 +1,20 @@
+availableSecrets:
+  secretManager:
+    - versionName: projects/$_AR_PROJECT_ID/secrets/tulip-web-env/versions/latest
+      env: WEB_ENV
+
 steps:
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    id: WriteEnv
+    entrypoint: bash
+    args:
+      - -c
+      - printf '%s' "$$WEB_ENV" > apps/web/.env
+    secretEnv: [WEB_ENV]
+
   - name: gcr.io/cloud-builders/docker
     id: Build
+    waitFor: [WriteEnv]
     args:
       - build
       - -t
