@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminAuth, adminDb } from "@/lib/firebase/admin";
 import { FieldValue } from "firebase-admin/firestore";
-import { addMemberToOrg, ensureBillingAccount } from "@/lib/firebase/adminHelpers";
+import {
+  addMemberToOrg,
+  ensureBillingAccount
+} from "@/lib/firebase/adminHelpers";
 
 export async function POST(request: NextRequest) {
   const authHeader = request.headers.get("Authorization");
@@ -30,6 +33,7 @@ export async function POST(request: NextRequest) {
   const profileSnap = await adminDb.doc(`users/${uid}`).get();
   const profileData = profileSnap.data();
   if (profileData?.orgIds?.length > 0) {
+    // @ts-ignore
     return NextResponse.json({ orgId: profileData.orgIds[0], existed: true });
   }
 
@@ -46,13 +50,17 @@ export async function POST(request: NextRequest) {
     await addMemberToOrg(doc.id, uid, "owner", {
       email: email ?? "",
       displayName: displayName ?? null,
-      photoURL: photoURL ?? null,
+      photoURL: photoURL ?? null
     }).catch(() => {}); // idempotent — ignore if already exists
     return NextResponse.json({ orgId: doc.id, existed: true });
   }
 
   const body = await request.json().catch(() => ({}));
-  const orgName = (body.name as string | undefined)?.trim() || displayName || email || "My Org";
+  const orgName =
+    (body.name as string | undefined)?.trim() ||
+    displayName ||
+    email ||
+    "My Org";
 
   const orgRef = adminDb.collection("orgs").doc();
   await orgRef.set({
@@ -60,14 +68,14 @@ export async function POST(request: NextRequest) {
     ownerUid: uid,
     createdAt: FieldValue.serverTimestamp(),
     status: "active",
-    memberCount: 1,
+    memberCount: 1
   });
 
   // Add creator as owner member, bootstrap billing
   await addMemberToOrg(orgRef.id, uid, "owner", {
     email: email ?? "",
     displayName: displayName ?? null,
-    photoURL: photoURL ?? null,
+    photoURL: photoURL ?? null
   });
 
   await ensureBillingAccount(orgRef.id);

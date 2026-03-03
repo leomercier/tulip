@@ -8,7 +8,7 @@ import type {
   CommandResultPayload,
   CommandType,
 } from "@tulip/types";
-import { renderCloudInit } from "@tulip/cloud-init";
+import { renderCloudInit } from "../services/cloudInit";
 import { createDroplet, deleteDroplet } from "../services/digitalocean";
 import { createTunnel, deleteTunnel } from "../services/cloudflare";
 import { decryptToken, generateToken } from "../services/crypto";

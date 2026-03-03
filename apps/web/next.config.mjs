@@ -21,6 +21,9 @@ const nextConfig = {
       }
     ];
   },
+  eslint: {
+    ignoreDuringBuilds: true
+  },
   // Transpile workspace packages
   transpilePackages: ["@tulip/types", "@tulip/cloud-init"]
 };

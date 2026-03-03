@@ -6,7 +6,7 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   signOut as firebaseSignOut,
-  type User,
+  type User
 } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase/client";
@@ -20,6 +20,7 @@ export function useAuth(): AuthState {
   const [state, setState] = useState<AuthState>({ user: null, loading: true });
 
   useEffect(() => {
+<<<<<<< HEAD
     const unsubscribe = onAuthStateChanged(
       auth,
       (user) => {
@@ -32,6 +33,13 @@ export function useAuth(): AuthState {
         // Auth initialisation failed (e.g. missing/invalid Firebase config)
         console.error("[useAuth] onAuthStateChanged error:", error);
         setState({ user: null, loading: false });
+=======
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log("Auth state changed:", user);
+      if (user) {
+        // Ensure a UserProfile document exists — create on first sign-in
+        await ensureUserProfile(user);
+>>>>>>> af13161 (sort bugs)
       }
     );
     return unsubscribe;
@@ -47,9 +55,12 @@ export function useAuth(): AuthState {
  */
 async function ensureUserProfile(user: User): Promise<void> {
   const ref = doc(db, "users", user.uid);
+  console.log("Ensuring user profile exists for:", user.uid);
   const snap = await getDoc(ref);
+  console.log("Checking user profile for:", user.uid, "Exists:", snap.exists());
 
   if (!snap.exists()) {
+    console.log("Creating user profile for new user:", user.uid);
     // Brand-new user — create profile
     await setDoc(ref, {
       uid: user.uid,
@@ -58,7 +69,7 @@ async function ensureUserProfile(user: User): Promise<void> {
       photoURL: user.photoURL ?? null,
       superAdmin: false,
       orgIds: [],
-      createdAt: serverTimestamp(),
+      createdAt: serverTimestamp()
     });
 
     // Notify server to auto-accept any pending email invites for this address
@@ -69,9 +80,9 @@ async function ensureUserProfile(user: User): Promise<void> {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${idToken}`,
+            Authorization: `Bearer ${idToken}`
           },
-          body: JSON.stringify({ email: user.email }),
+          body: JSON.stringify({ email: user.email })
         });
       } catch {
         // Non-fatal — invites can be accepted manually
@@ -84,7 +95,7 @@ async function ensureUserProfile(user: User): Promise<void> {
       {
         displayName: user.displayName ?? null,
         photoURL: user.photoURL ?? null,
-        email: user.email ?? "",
+        email: user.email ?? ""
       },
       { merge: true }
     );

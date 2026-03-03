@@ -1,0 +1,42 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.renderCloudInit = renderCloudInit;
+const template_1 = require("./template");
+/**
+ * Render the cloud-init YAML by substituting all {{PLACEHOLDER}} tokens.
+ *
+ * All values are validated to be DNS/shell-safe before injection.
+ * The rendered string is passed directly as `user_data` to the DO API.
+ */
+function renderCloudInit(vars) {
+    validateVars(vars);
+    let output = template_1.CLOUD_INIT_TEMPLATE;
+    for (const [key, value] of Object.entries(vars)) {
+        output = output.replaceAll(`{{${key}}}`, value);
+    }
+    // Safety check — no unresolved placeholders should remain
+    const unresolved = output.match(/\{\{[A-Z_]+\}\}/g);
+    if (unresolved) {
+        throw new Error(`Unresolved cloud-init placeholders: ${unresolved.join(", ")}`);
+    }
+    return output;
+}
+function validateVars(vars) {
+    if (!vars.INSTANCE_ID.match(/^tulip-[a-z0-9]+$/)) {
+        throw new Error(`Invalid INSTANCE_ID: ${vars.INSTANCE_ID}`);
+    }
+    if (!vars.ORG_ID.match(/^[a-zA-Z0-9_-]+$/)) {
+        throw new Error(`Invalid ORG_ID: ${vars.ORG_ID}`);
+    }
+    if (!vars.BOOTSTRAP_TOKEN.match(/^[a-f0-9]{64}$/)) {
+        throw new Error("Invalid BOOTSTRAP_TOKEN: must be 32-byte hex");
+    }
+    if (!vars.CONTROL_PLANE_BASE_URL.startsWith("https://")) {
+        throw new Error("CONTROL_PLANE_BASE_URL must be HTTPS");
+    }
+    // Prevent shell injection via the Docker image name injected into the cloud-init script
+    // Allow: registry/org/name:tag and @sha256:digest — no spaces, semicolons, or shell metacharacters
+    if (!vars.OPENCLAW_IMAGE.match(/^[a-zA-Z0-9._\-/:@]+$/)) {
+        throw new Error("Invalid OPENCLAW_IMAGE: contains disallowed characters");
+    }
+}
