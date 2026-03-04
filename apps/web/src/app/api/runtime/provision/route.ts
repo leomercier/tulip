@@ -3,6 +3,8 @@ import { adminAuth, adminDb } from "@/lib/firebase/admin";
 import { FieldValue } from "firebase-admin/firestore";
 import { randomBytes } from "crypto";
 import { renderCloudInit } from "@tulip/cloud-init";
+import { generateSSHKeyPair } from "@/lib/sshKeys";
+import { encryptToken } from "@/lib/tokenCrypto";
 
 const DO_API_TOKEN = process.env.DO_API_TOKEN!;
 const DO_REGION = process.env.DO_REGION ?? "lon1";
@@ -49,7 +51,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Connect Slack before provisioning" }, { status: 400 });
   }
 
-  // orgs/{orgId}/runtime/current (updated path)
   const runtimeDoc = await adminDb.doc(`orgs/${orgId}/runtime/current`).get();
   if (runtimeDoc.exists) {
     const s = runtimeDoc.data()?.status;
@@ -62,6 +63,10 @@ export async function POST(request: NextRequest) {
   const bootstrapToken = randomBytes(32).toString("hex");
   const subdomain = `${instanceId}.${RUNTIME_BASE_DOMAIN}`;
 
+  // Generate per-org SSH key pair for this runtime
+  const { privateKeyPEM, publicKeyOpenSSH } = generateSSHKeyPair(`tulip-${orgId}`);
+  const sshPrivateKeyEncrypted = encryptToken(privateKeyPEM);
+
   // Render cloud-init using the package template
   const userData = renderCloudInit({
     CONTROL_PLANE_BASE_URL: APP_URL,
@@ -69,9 +74,10 @@ export async function POST(request: NextRequest) {
     ORG_ID: orgId,
     INSTANCE_ID: instanceId,
     OPENCLAW_IMAGE,
+    SSH_PUBLIC_KEY: publicKeyOpenSSH,
   });
 
-  // Write provisioning record
+  // Write provisioning record (store SSH key material in Firestore)
   await adminDb.doc(`orgs/${orgId}/runtime/current`).set({
     instanceId,
     dropletId: 0,
@@ -86,6 +92,8 @@ export async function POST(request: NextRequest) {
     lastError: null,
     bootstrapToken,
     bootstrapTokenExpiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+    sshPublicKey: publicKeyOpenSSH,
+    sshPrivateKeyEncrypted,
   });
 
   // Create DigitalOcean droplet
@@ -103,7 +111,6 @@ export async function POST(request: NextRequest) {
       monitoring: true,
       ipv6: false,
       backups: false,
-      ssh_keys: [43938919],
       tags: ["tulip", `org:${orgId}`, `instance:${instanceId}`],
       user_data: userData,
     }),

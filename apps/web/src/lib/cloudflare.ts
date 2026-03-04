@@ -41,8 +41,11 @@ export interface TunnelResult {
 
 /**
  * Create a named Cloudflare Tunnel for a given instance.
- * Configures ingress to localhost:3000 (OpenClaw) and creates a CNAME DNS record.
- * Returns the tunnel token that cloudflared uses to authenticate.
+ * Configures path-based ingress:
+ *   /terminal  → localhost:7681 (ttyd web terminal)
+ *   /files     → localhost:8080 (filebrowser)
+ *   (default)  → localhost:3000 (OpenClaw)
+ * Also creates CNAME DNS record.
  */
 export async function createTunnel(instanceId: string): Promise<TunnelResult> {
   const accountId = cfAccountId();
@@ -54,14 +57,20 @@ export async function createTunnel(instanceId: string): Promise<TunnelResult> {
 
   const hostname = `${instanceId}.${process.env.CF_TUNNEL_HOSTNAME_ZONE ?? "agents.tulip.ai"}`;
 
-  // Configure tunnel ingress: route hostname → localhost:3000, 404 everything else
+  // Configure tunnel ingress with path-based routing
   await cfRequest(
     `/accounts/${accountId}/cfd_tunnel/${tunnel.id}/configurations`,
     "PUT",
     {
       config: {
         ingress: [
+          // Web terminal (ttyd) — must come before the catch-all
+          { hostname, path: "^/terminal", service: "http://localhost:7681" },
+          // File browser — must come before the catch-all
+          { hostname, path: "^/files", service: "http://localhost:8080" },
+          // OpenClaw UI — catch-all for this hostname
           { hostname, service: "http://localhost:3000" },
+          // Default 404 for unknown hostnames
           { service: "http_status:404" },
         ],
       },

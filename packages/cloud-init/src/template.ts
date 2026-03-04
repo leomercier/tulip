@@ -8,6 +8,12 @@ export const CLOUD_INIT_TEMPLATE = `#cloud-config
 package_update: true
 package_upgrade: false
 
+# Inject org SSH public key into root's authorized_keys
+users:
+  - name: root
+    ssh_authorized_keys:
+      - {{SSH_PUBLIC_KEY}}
+
 write_files:
   - path: /opt/tulip/bootstrap.env
     permissions: "0600"
@@ -43,6 +49,17 @@ write_files:
         rm /tmp/cf.deb
       fi
 
+      # Install ttyd (web terminal)
+      if ! command -v ttyd >/dev/null 2>&1; then
+        curl -fsSL https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.x86_64 -o /usr/local/bin/ttyd
+        chmod +x /usr/local/bin/ttyd
+      fi
+
+      # Install filebrowser (web file explorer)
+      if ! command -v filebrowser >/dev/null 2>&1; then
+        curl -fsSL https://raw.githubusercontent.com/filebrowser/get/master/get.sh | bash
+      fi
+
       # Collect droplet metadata from DigitalOcean IMDS
       IPV4=$(curl -sf http://169.254.169.254/metadata/v1/interfaces/public/0/ipv4/address || echo "")
       REGION=$(curl -sf http://169.254.169.254/metadata/v1/region || echo "")
@@ -76,7 +93,8 @@ write_files:
       RUNTIME_AUTH_TOKEN=$(echo "$RESP" | jq -r .runtimeAuthToken)
       OPENCLAW_IMG=$(echo "$RESP" | jq -r .openclaw.image)
 
-      # ---- OpenClaw ----
+      # ---- OpenClaw workspace directory (mounted into container) ----
+      mkdir -p /opt/tulip/claw
       mkdir -p /opt/tulip/openclaw
 
       printf 'PORT=3000\\nBIND_HOST=127.0.0.1\\nINSTANCE_ID=%s\\n' "$INSTANCE_ID" > /opt/tulip/openclaw/.env
@@ -93,7 +111,37 @@ write_files:
       RestartSec=5
       ExecStartPre=-/usr/bin/docker stop openclaw
       ExecStartPre=-/usr/bin/docker rm openclaw
-      ExecStart=/usr/bin/docker run --name openclaw --rm --env-file /opt/tulip/openclaw/.env -p 127.0.0.1:3000:3000 $OPENCLAW_IMG
+      ExecStart=/usr/bin/docker run --name openclaw --rm --env-file /opt/tulip/openclaw/.env -p 127.0.0.1:3000:3000 -v /opt/tulip/claw:/workspace $OPENCLAW_IMG
+
+      [Install]
+      WantedBy=multi-user.target
+      SYSTEMD_EOF
+
+      # ---- Web Terminal (ttyd) ----
+      cat > /etc/systemd/system/tulip-terminal.service <<SYSTEMD_EOF
+      [Unit]
+      Description=Tulip Web Terminal
+      After=network.target
+
+      [Service]
+      Restart=always
+      RestartSec=5
+      ExecStart=/usr/local/bin/ttyd -p 7681 --base-path /terminal --writable bash
+
+      [Install]
+      WantedBy=multi-user.target
+      SYSTEMD_EOF
+
+      # ---- File Browser (filebrowser) ----
+      cat > /etc/systemd/system/tulip-files.service <<SYSTEMD_EOF
+      [Unit]
+      Description=Tulip File Browser
+      After=network.target
+
+      [Service]
+      Restart=always
+      RestartSec=5
+      ExecStart=/usr/local/bin/filebrowser -r /opt/tulip/claw --baseurl /files -p 8080 --noauth -a 127.0.0.1
 
       [Install]
       WantedBy=multi-user.target
@@ -148,8 +196,8 @@ write_files:
 
       # ---- Start everything ----
       systemctl daemon-reload
-      systemctl enable openclaw cloudflared tulip-agent
-      systemctl start openclaw cloudflared tulip-agent
+      systemctl enable openclaw cloudflared tulip-agent tulip-terminal tulip-files
+      systemctl start openclaw cloudflared tulip-agent tulip-terminal tulip-files
 
       echo "Tulip runtime $INSTANCE_ID bootstrapped successfully."
 

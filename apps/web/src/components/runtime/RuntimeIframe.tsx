@@ -8,9 +8,10 @@ import { cn } from "@/lib/utils";
 interface RuntimeIframeProps {
   url: string;
   instanceId: string;
+  title?: string;
 }
 
-export function RuntimeIframe({ url, instanceId }: RuntimeIframeProps) {
+export function RuntimeIframe({ url, instanceId, title }: RuntimeIframeProps) {
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
   const [key, setKey] = useState(0);
@@ -96,7 +97,7 @@ export function RuntimeIframe({ url, instanceId }: RuntimeIframeProps) {
             setErrored(true);
             setLoaded(false);
           }}
-          title={`OpenClaw runtime — ${instanceId}`}
+          title={title ?? `OpenClaw runtime — ${instanceId}`}
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
         />
       </div>

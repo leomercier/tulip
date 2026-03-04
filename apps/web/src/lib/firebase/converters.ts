@@ -161,6 +161,8 @@ export const runtimeConverter: FirestoreDataConverter<Runtime> = {
       openclawHealthy: d.openclawHealthy ?? null,
       cloudflaredHealthy: d.cloudflaredHealthy ?? null,
       lastError: d.lastError ?? null,
+      sshPublicKey: d.sshPublicKey ?? null,
+      sshPrivateKeyEncrypted: d.sshPrivateKeyEncrypted ?? null,
     };
   },
 };

@@ -9,11 +9,18 @@ import { HealthStatus } from "@/components/runtime/HealthStatus";
 import { CommandPanel } from "@/components/runtime/CommandPanel";
 import { DebugPanel } from "@/components/runtime/DebugPanel";
 import { StatusBadge } from "@/components/ui/badge";
-import { Loader2, LayoutGrid, SplitSquareVertical } from "lucide-react";
+import { Loader2, LayoutGrid, SplitSquareVertical, Terminal, FolderOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Toaster } from "react-hot-toast";
 
-type ViewMode = "split" | "full";
+type ViewMode = "split" | "full" | "terminal" | "files";
+
+const VIEW_MODES: { mode: ViewMode; icon: React.ElementType; label: string }[] = [
+  { mode: "split", icon: SplitSquareVertical, label: "Split" },
+  { mode: "full", icon: LayoutGrid, label: "Agent" },
+  { mode: "terminal", icon: Terminal, label: "Terminal" },
+  { mode: "files", icon: FolderOpen, label: "Files" },
+];
 
 export default function RuntimePage() {
   const { user } = useAuth();
@@ -42,31 +49,26 @@ export default function RuntimePage() {
       />
 
       {/* Page header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white/80 backdrop-blur shrink-0">
-        <div className="flex items-center gap-3">
-          <h1 className="text-sm font-medium text-gray-800">Runtime</h1>
+      <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-white/80 backdrop-blur shrink-0 gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <h1 className="text-sm font-medium text-gray-800 shrink-0">Runtime</h1>
           {runtime && <StatusBadge status={runtime.status} />}
           {runtime && (
-            <code className="text-xs text-gray-400 font-mono hidden sm:block">
+            <code className="text-xs text-gray-400 font-mono hidden sm:block truncate">
               {runtime.instanceId}
             </code>
           )}
         </div>
 
         {isReady && (
-          <div className="flex items-center gap-1 p-1 rounded-lg bg-gray-100 border border-gray-200">
-            {(
-              [
-                { mode: "split" as ViewMode, icon: SplitSquareVertical, label: "Split view" },
-                { mode: "full" as ViewMode, icon: LayoutGrid, label: "Full view" },
-              ] as const
-            ).map(({ mode, icon: Icon, label }) => (
+          <div className="flex items-center gap-1 p-1 rounded-lg bg-gray-100 border border-gray-200 shrink-0">
+            {VIEW_MODES.map(({ mode, icon: Icon, label }) => (
               <button
                 key={mode}
                 onClick={() => setViewMode(mode)}
                 title={label}
                 className={cn(
-                  "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all",
+                  "flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-md text-xs font-medium transition-all",
                   viewMode === mode
                     ? "bg-white text-gray-900 shadow-sm"
                     : "text-gray-500 hover:text-gray-700"
@@ -90,7 +92,7 @@ export default function RuntimePage() {
           />
           {runtime && (
             <div className="px-4 pb-4 sm:px-8 sm:pb-8 max-w-2xl mx-auto">
-              <DebugPanel runtime={runtime} />
+              <DebugPanel runtime={runtime} orgId={org?.id ?? ""} />
             </div>
           )}
         </div>
@@ -100,6 +102,24 @@ export default function RuntimePage() {
             key={refreshKey}
             url={`https://${runtime.subdomain}`}
             instanceId={runtime.instanceId}
+          />
+        </div>
+      ) : viewMode === "terminal" ? (
+        <div className="flex-1 overflow-hidden">
+          <RuntimeIframe
+            key={`terminal-${refreshKey}`}
+            url={`https://${runtime.subdomain}/terminal`}
+            instanceId={runtime.instanceId}
+            title="Web Terminal"
+          />
+        </div>
+      ) : viewMode === "files" ? (
+        <div className="flex-1 overflow-hidden">
+          <RuntimeIframe
+            key={`files-${refreshKey}`}
+            url={`https://${runtime.subdomain}/files`}
+            instanceId={runtime.instanceId}
+            title="File Browser"
           />
         </div>
       ) : (

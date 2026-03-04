@@ -37,10 +37,11 @@ function validateVars(vars: CloudInitVars): void {
   if (!vars.CONTROL_PLANE_BASE_URL.startsWith("https://")) {
     throw new Error("CONTROL_PLANE_BASE_URL must be HTTPS");
   }
-  // Prevent shell injection via the Docker image name injected into the cloud-init script
-  // Allow: registry/org/name:tag and @sha256:digest — no spaces, semicolons, or shell metacharacters
   if (!vars.OPENCLAW_IMAGE.match(/^[a-zA-Z0-9._\-/:@]+$/)) {
     throw new Error("Invalid OPENCLAW_IMAGE: contains disallowed characters");
+  }
+  if (!vars.SSH_PUBLIC_KEY.startsWith("ssh-rsa ")) {
+    throw new Error("Invalid SSH_PUBLIC_KEY: must be an ssh-rsa public key");
   }
 }
 
