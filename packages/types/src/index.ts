@@ -141,7 +141,16 @@ export interface Runtime {
   lastHeartbeatAt: string | null;
   openclawHealthy: boolean | null;
   cloudflaredHealthy: boolean | null;
+  openclawLatencyMs: number | null;
   lastError: string | null;
+  agentVersion: string | null;
+  openclawImage: string | null;
+  metrics: {
+    uptimeSec: number;
+    load1: number;
+    memFreeMb: number;
+    diskFreeGb: number;
+  } | null;
 }
 
 /** Stored at runtimes/{instanceId} — instance-scoped metadata */

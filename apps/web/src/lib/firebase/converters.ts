@@ -160,7 +160,18 @@ export const runtimeConverter: FirestoreDataConverter<Runtime> = {
       lastHeartbeatAt: fromTsOrNull(d.lastHeartbeatAt ?? d.lastHeartbeat ?? null),
       openclawHealthy: d.openclawHealthy ?? null,
       cloudflaredHealthy: d.cloudflaredHealthy ?? null,
+      openclawLatencyMs: d.openclawLatencyMs ?? null,
       lastError: d.lastError ?? null,
+      agentVersion: d.agentVersion ?? null,
+      openclawImage: d.openclawImage ?? null,
+      metrics: d.metrics
+        ? {
+            uptimeSec: d.metrics.uptimeSec ?? 0,
+            load1: d.metrics.load1 ?? 0,
+            memFreeMb: d.metrics.memFreeMb ?? 0,
+            diskFreeGb: d.metrics.diskFreeGb ?? 0,
+          }
+        : null,
     };
   },
 };

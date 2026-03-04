@@ -30,7 +30,19 @@ export async function POST(request: NextRequest) {
     lastHeartbeatAt: FieldValue.serverTimestamp(),
     openclawHealthy: openclawOk,
     cloudflaredHealthy: cloudflaredOk,
+    openclawLatencyMs: checks?.openclaw?.latencyMs ?? null,
+    agentVersion: version?.agent ?? null,
+    openclawImage: version?.openclawImage ?? null,
   };
+
+  if (body.metrics) {
+    update.metrics = {
+      uptimeSec: body.metrics.uptimeSec ?? 0,
+      load1: body.metrics.load1 ?? 0,
+      memFreeMb: body.metrics.memFreeMb ?? 0,
+      diskFreeGb: body.metrics.diskFreeGb ?? 0,
+    };
+  }
 
   // Transition booting → ready on first heartbeat from the agent.
   // openclaw/cloudflared health is tracked separately via openclawHealthy/cloudflaredHealthy —
@@ -41,7 +53,7 @@ export async function POST(request: NextRequest) {
 
   await rtDoc.ref.update(update);
 
-  // Update instance-level metadata
+  // Update instance-level metadata (kept for backwards compat)
   if (version) {
     await adminDb.doc(`runtimes/${instanceId}`).set(
       {
