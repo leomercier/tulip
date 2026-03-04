@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     cloudflaredHealthy: null,
     lastError: null,
     bootstrapToken,
-    bootstrapTokenExpiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+    bootstrapTokenExpiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
   });
 
   // Create DigitalOcean droplet
