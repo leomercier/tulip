@@ -9,9 +9,13 @@ import { HealthStatus } from "@/components/runtime/HealthStatus";
 import { CommandPanel } from "@/components/runtime/CommandPanel";
 import { DebugPanel } from "@/components/runtime/DebugPanel";
 import { StatusBadge } from "@/components/ui/badge";
-import { Loader2, LayoutGrid, SplitSquareVertical } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, LayoutGrid, SplitSquareVertical, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Toaster } from "react-hot-toast";
+import { getIdToken } from "firebase/auth";
+import { auth } from "@/lib/firebase/client";
+import toast from "react-hot-toast";
 
 type ViewMode = "split" | "full";
 
@@ -23,8 +27,32 @@ export default function RuntimePage() {
   const { commands } = useCommandHistory(runtime?.instanceId);
   const [viewMode, setViewMode] = useState<ViewMode>("split");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [deprovisioning, setDeprovisioning] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const isReady = runtime?.status === "ready";
+
+  async function handleDeprovision() {
+    if (!confirmDelete) { setConfirmDelete(true); return; }
+    setDeprovisioning(true);
+    setConfirmDelete(false);
+    try {
+      const token = await getIdToken(auth.currentUser!);
+      const res = await fetch("/api/runtime/deprovision", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error ?? "Deprovision failed");
+      }
+      toast.success("Runtime deleted.");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Deprovision failed");
+    } finally {
+      setDeprovisioning(false);
+    }
+  }
 
   if (orgLoading || runtimeLoading) {
     return (
@@ -113,6 +141,28 @@ export default function RuntimePage() {
                 commands={commands}
               />
               <DebugPanel runtime={runtime} />
+              <div className="pt-2 border-t border-gray-200 flex items-center gap-2">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleDeprovision}
+                  loading={deprovisioning}
+                  className="w-full"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  {confirmDelete ? "Confirm delete" : "Delete runtime"}
+                </Button>
+                {confirmDelete && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setConfirmDelete(false)}
+                    className="shrink-0"
+                  >
+                    Cancel
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
           <div className="flex-1 overflow-hidden min-h-0">
