@@ -83,7 +83,7 @@ function IntegrationsContent() {
   }
 
   return (
-    <div className="p-8 max-w-3xl mx-auto space-y-8 animate-fade-in">
+    <div className="p-4 sm:p-8 max-w-3xl mx-auto space-y-8 animate-fade-in">
       <Toaster position="top-right" toastOptions={{ className: "!bg-white !text-gray-900 !border !border-gray-200 !shadow-md" }} />
 
       <div>
@@ -96,9 +96,9 @@ function IntegrationsContent() {
       {/* Slack */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-[#4A154B]/10 border border-[#4A154B]/20 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-lg bg-[#4A154B]/10 border border-[#4A154B]/20 flex items-center justify-center shrink-0">
                 <SlackLogo />
               </div>
               <div>
@@ -108,14 +108,16 @@ function IntegrationsContent() {
                 </p>
               </div>
             </div>
-            {slack ? (
-              <Badge variant="success">
-                <CheckCircle2 className="w-3 h-3 mr-1" />
-                Connected
-              </Badge>
-            ) : (
-              <Badge variant="outline">Not connected</Badge>
-            )}
+            <div className="shrink-0">
+              {slack ? (
+                <Badge variant="success">
+                  <CheckCircle2 className="w-3 h-3 mr-1" />
+                  Connected
+                </Badge>
+              ) : (
+                <Badge variant="outline">Not connected</Badge>
+              )}
+            </div>
           </div>
         </CardHeader>
 

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, Menu } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { OrgProvider } from "@/lib/context/OrgContext";
@@ -14,6 +14,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const { orgs, currentOrg, loading: orgLoading, profile, setCurrentOrgId } = useOrgContext();
   const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -46,8 +47,23 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
         currentOrg={currentOrg}
         onSwitchOrg={setCurrentOrgId}
         isSuperAdmin={profile?.superAdmin ?? false}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
-      <main className="flex-1 overflow-y-auto">{children}</main>
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+        {/* Mobile header — hidden on md+ where sidebar is always visible */}
+        <div className="md:hidden flex items-center gap-3 px-4 py-3 border-b border-gray-200 bg-white sticky top-0 z-30">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-1 -ml-1 text-gray-500 hover:text-gray-900 transition-colors"
+            aria-label="Open menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <span className="text-sm font-semibold text-gray-900">Tulip</span>
+        </div>
+        <main className="flex-1 overflow-y-auto">{children}</main>
+      </div>
     </div>
   );
 }

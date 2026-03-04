@@ -32,14 +32,14 @@ export default function BillingPage() {
   const { entries, loading: ledgerLoading } = useLedger(currentOrg?.id, 50);
 
   if (!currentOrg) {
-    return <div className="p-8 text-gray-400 text-sm">No organisation selected.</div>;
+    return <div className="p-4 sm:p-8 text-gray-400 text-sm">No organisation selected.</div>;
   }
 
   const isLow = billing ? billing.credits < 500 : false;
   const isEmpty = billing ? billing.credits <= 0 : true;
 
   return (
-    <div className="p-8 max-w-3xl mx-auto space-y-8 animate-fade-in">
+    <div className="p-4 sm:p-8 max-w-3xl mx-auto space-y-8 animate-fade-in">
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Billing</h1>
         <p className="mt-1 text-sm text-gray-500">

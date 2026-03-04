@@ -109,7 +109,7 @@ export default function AdminOrgBillingPage() {
   const credits = data?.billing?.credits ?? 0;
 
   return (
-    <div className="p-8 max-w-3xl mx-auto space-y-8 animate-fade-in">
+    <div className="p-4 sm:p-8 max-w-3xl mx-auto space-y-8 animate-fade-in">
       <Toaster
         position="top-right"
         toastOptions={{ className: "!bg-zinc-800 !text-zinc-100 !border !border-zinc-700" }}
@@ -178,23 +178,21 @@ export default function AdminOrgBillingPage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={grantCredits} className="space-y-4">
-                <div className="flex gap-3">
-                  <div className="relative flex-1">
-                    <input
-                      type="number"
-                      value={creditAmount}
-                      onChange={(e) => setCreditAmount(e.target.value)}
-                      placeholder="e.g. 10000"
-                      className="w-full text-sm bg-zinc-800 border border-zinc-700 text-zinc-200 placeholder-zinc-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-red-500"
-                      required
-                    />
-                  </div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input
+                    type="number"
+                    value={creditAmount}
+                    onChange={(e) => setCreditAmount(e.target.value)}
+                    placeholder="e.g. 10000"
+                    className="w-full sm:w-32 text-sm bg-zinc-800 border border-zinc-700 text-zinc-200 placeholder-zinc-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-red-500"
+                    required
+                  />
                   <input
                     type="text"
                     value={creditDesc}
                     onChange={(e) => setCreditDesc(e.target.value)}
                     placeholder="Description (optional)"
-                    className="flex-[2] text-sm bg-zinc-800 border border-zinc-700 text-zinc-200 placeholder-zinc-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-red-500"
+                    className="flex-1 text-sm bg-zinc-800 border border-zinc-700 text-zinc-200 placeholder-zinc-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-red-500"
                   />
                 </div>
                 <div className="flex gap-2">

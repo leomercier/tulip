@@ -89,7 +89,7 @@ export default function RuntimePage() {
             onProvisioned={() => setRefreshKey((k) => k + 1)}
           />
           {runtime && (
-            <div className="px-8 pb-8 max-w-2xl mx-auto">
+            <div className="px-4 pb-4 sm:px-8 sm:pb-8 max-w-2xl mx-auto">
               <DebugPanel runtime={runtime} />
             </div>
           )}
@@ -103,9 +103,9 @@ export default function RuntimePage() {
           />
         </div>
       ) : (
-        // Split: sidebar left with health + commands, iframe right
-        <div className="flex flex-1 overflow-hidden">
-          <div className="w-72 shrink-0 overflow-y-auto border-r border-gray-200 scrollbar-none">
+        // Split: sidebar left with health + commands, iframe right (stacked on mobile)
+        <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+          <div className="w-full md:w-72 md:shrink-0 overflow-y-auto border-b md:border-b-0 md:border-r border-gray-200 scrollbar-none h-48 md:h-auto">
             <div className="p-4 space-y-4">
               <HealthStatus runtime={runtime} />
               <CommandPanel
@@ -114,7 +114,7 @@ export default function RuntimePage() {
               />
             </div>
           </div>
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden min-h-0">
             <RuntimeIframe
               key={refreshKey}
               url={`https://${runtime.subdomain}`}

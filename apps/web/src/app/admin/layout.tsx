@@ -12,6 +12,7 @@ import {
   LogOut,
   Loader2,
   ShieldAlert,
+  Menu,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -29,6 +30,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const pathname = usePathname();
   const [checking, setChecking] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (authLoading || orgLoading) return;
@@ -55,9 +57,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   async function handleSignOut() {
+    setSidebarOpen(false);
     await signOut();
     document.cookie = "__session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     router.replace("/login");
+  }
+
+  function handleNavClick() {
+    setSidebarOpen(false);
   }
 
   if (authLoading || orgLoading || checking) {
@@ -72,8 +79,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="flex min-h-screen bg-zinc-950">
+      {/* Mobile backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden
+        />
+      )}
+
       {/* Admin sidebar */}
-      <aside className="flex flex-col w-60 min-h-screen border-r border-red-900/30 bg-zinc-950/80 backdrop-blur">
+      <aside
+        className={cn(
+          "flex flex-col w-60 border-r border-red-900/30 bg-zinc-950/80 backdrop-blur",
+          "fixed inset-y-0 left-0 z-50 h-full",
+          "transform transition-transform duration-200 ease-in-out",
+          "md:relative md:h-auto md:min-h-screen md:translate-x-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
         {/* Logo + badge */}
         <div className="flex items-center gap-3 px-5 py-5 border-b border-red-900/30">
           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-600/20 ring-1 ring-red-500/30">
@@ -91,6 +115,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link
               key={href}
               href={href}
+              onClick={handleNavClick}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                 isActive(href, exact)
@@ -111,6 +136,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {/* Return to app */}
           <Link
             href="/app"
+            onClick={handleNavClick}
             className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800/50 transition-colors mt-4"
           >
             <Flower2 className="w-4 h-4 shrink-0 text-tulip-500" />
@@ -150,7 +176,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto">{children}</main>
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+        {/* Mobile header */}
+        <div className="md:hidden flex items-center gap-3 px-4 py-3 border-b border-red-900/30 bg-zinc-950 sticky top-0 z-30">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-1 -ml-1 text-zinc-500 hover:text-zinc-100 transition-colors"
+            aria-label="Open menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <span className="text-sm font-semibold text-zinc-100">Tulip Admin</span>
+        </div>
+        <main className="flex-1 overflow-y-auto">{children}</main>
+      </div>
     </div>
   );
 }

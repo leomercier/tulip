@@ -60,7 +60,7 @@ export default function AdminOrgsPage() {
   const totalMembers = orgs.reduce((s, o) => s + o.memberCount, 0);
 
   return (
-    <div className="p-8 max-w-5xl mx-auto space-y-8 animate-fade-in">
+    <div className="p-4 sm:p-8 max-w-5xl mx-auto space-y-8 animate-fade-in">
       <div>
         <h1 className="text-2xl font-semibold text-zinc-100">Organisations</h1>
         <p className="mt-1 text-sm text-zinc-500">

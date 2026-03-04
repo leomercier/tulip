@@ -35,7 +35,7 @@ export default function AppOverviewPage() {
   const allDone = steps.every((s) => s.done);
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-8 animate-fade-in">
+    <div className="p-4 sm:p-8 max-w-4xl mx-auto space-y-8 animate-fade-in">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">

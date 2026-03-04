@@ -176,12 +176,12 @@ export default function OrgPage() {
 
   if (!currentOrg) {
     return (
-      <div className="p-8 text-gray-400 text-sm">No organisation selected.</div>
+      <div className="p-4 sm:p-8 text-gray-400 text-sm">No organisation selected.</div>
     );
   }
 
   return (
-    <div className="p-8 max-w-3xl mx-auto space-y-8 animate-fade-in">
+    <div className="p-4 sm:p-8 max-w-3xl mx-auto space-y-8 animate-fade-in">
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">{currentOrg.name}</h1>
         <p className="mt-1 text-sm text-gray-500">Manage members and invitations.</p>
@@ -206,7 +206,7 @@ export default function OrgPage() {
           ) : (
             <ul className="divide-y divide-gray-200">
               {members.map((member) => (
-                <li key={member.uid} className="flex items-center gap-4 py-3">
+                <li key={member.uid} className="flex items-center gap-3 py-3 flex-wrap sm:flex-nowrap">
                   {member.photoURL ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
