@@ -7,6 +7,7 @@ import { RuntimeIframe } from "@/components/runtime/RuntimeIframe";
 import { ProvisionPanel } from "@/components/runtime/ProvisionPanel";
 import { HealthStatus } from "@/components/runtime/HealthStatus";
 import { CommandPanel } from "@/components/runtime/CommandPanel";
+import { DebugPanel } from "@/components/runtime/DebugPanel";
 import { StatusBadge } from "@/components/ui/badge";
 import { Loader2, LayoutGrid, SplitSquareVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -87,6 +88,11 @@ export default function RuntimePage() {
             hasSlack={Boolean(slack)}
             onProvisioned={() => setRefreshKey((k) => k + 1)}
           />
+          {runtime && (
+            <div className="px-8 pb-8 max-w-2xl mx-auto">
+              <DebugPanel runtime={runtime} />
+            </div>
+          )}
         </div>
       ) : viewMode === "full" ? (
         <div className="flex-1 overflow-hidden">

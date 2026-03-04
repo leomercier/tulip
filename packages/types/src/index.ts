@@ -134,6 +134,7 @@ export interface Runtime {
   dropletId: number;
   hostname: string;
   region: string;
+  ipv4: string | null;
   status: RuntimeStatus;
   subdomain: string;
   createdAt: string;

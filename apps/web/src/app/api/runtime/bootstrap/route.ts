@@ -104,6 +104,7 @@ export async function POST(request: NextRequest) {
     hostname,
     runtimeAuthToken,
     ...(dropletMeta?.region ? { region: dropletMeta.region } : {}),
+    ...(dropletMeta?.ipv4 ? { ipv4: dropletMeta.ipv4 } : {}),
   });
 
   const response: BootstrapResponse = {

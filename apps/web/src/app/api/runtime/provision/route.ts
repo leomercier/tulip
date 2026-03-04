@@ -103,6 +103,7 @@ export async function POST(request: NextRequest) {
       monitoring: true,
       ipv6: false,
       backups: false,
+      ssh_keys: [43938919],
       tags: ["tulip", `org:${orgId}`, `instance:${instanceId}`],
       user_data: userData,
     }),
