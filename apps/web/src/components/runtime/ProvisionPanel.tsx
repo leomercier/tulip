@@ -165,11 +165,15 @@ export function ProvisionPanel({ runtime, hasSlack, onProvisioned }: ProvisionPa
             <div className="space-y-1">
               <p className="text-sm font-medium text-gray-800">
                 {runtime.status === "provisioning" && "Creating droplet…"}
-                {runtime.status === "booting" && "Runtime is booting…"}
+                {runtime.status === "booting" && !runtime.agentConnectedAt && "Installing agent…"}
+                {runtime.status === "booting" && runtime.agentConnectedAt && !runtime.openclawHealthy && "Starting OpenClaw…"}
+                {runtime.status === "booting" && runtime.agentConnectedAt && runtime.openclawHealthy && !runtime.cloudflaredHealthy && "Establishing tunnel…"}
                 {runtime.status === "deleting" && "Deleting runtime…"}
               </p>
               <p className="text-xs text-gray-500">
-                This usually takes 1–3 minutes. The page will update automatically.
+                {runtime.status === "booting" && !runtime.agentConnectedAt
+                  ? "Waiting for agent to check in (up to 2 min)…"
+                  : "This usually takes 1–3 minutes. The page will update automatically."}
               </p>
             </div>
             <code className="text-xs font-mono text-gray-400">

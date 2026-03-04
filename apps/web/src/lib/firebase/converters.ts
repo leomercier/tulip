@@ -156,11 +156,13 @@ export const runtimeConverter: FirestoreDataConverter<Runtime> = {
       status: d.status,
       subdomain: d.subdomain ?? "",
       createdAt: fromTs(d.createdAt),
+      agentConnectedAt: fromTsOrNull(d.agentConnectedAt ?? null),
       // Support both old (lastHeartbeat) and new (lastHeartbeatAt) field names
       lastHeartbeatAt: fromTsOrNull(d.lastHeartbeatAt ?? d.lastHeartbeat ?? null),
       openclawHealthy: d.openclawHealthy ?? null,
       cloudflaredHealthy: d.cloudflaredHealthy ?? null,
       lastError: d.lastError ?? null,
+      metrics: d.metrics ?? null,
     };
   },
 };

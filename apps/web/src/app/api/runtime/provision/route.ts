@@ -80,10 +80,12 @@ export async function POST(request: NextRequest) {
     status: "provisioning",
     subdomain,
     createdAt: FieldValue.serverTimestamp(),
+    agentConnectedAt: null,
     lastHeartbeatAt: null,
     openclawHealthy: null,
     cloudflaredHealthy: null,
     lastError: null,
+    metrics: null,
     bootstrapToken,
     bootstrapTokenExpiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
   });

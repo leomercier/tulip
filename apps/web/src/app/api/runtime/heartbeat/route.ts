@@ -22,7 +22,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const currentStatus: string = rtDoc.data()?.status ?? "booting";
+  const rtData = rtDoc.data()!;
+  const currentStatus: string = rtData.status ?? "booting";
   const openclawOk = checks?.openclaw?.ok ?? null;
   const cloudflaredOk = checks?.cloudflared?.ok ?? null;
 
@@ -31,6 +32,21 @@ export async function POST(request: NextRequest) {
     openclawHealthy: openclawOk,
     cloudflaredHealthy: cloudflaredOk,
   };
+
+  // Record timestamp of first agent connection
+  if (!rtData.agentConnectedAt) {
+    update.agentConnectedAt = FieldValue.serverTimestamp();
+  }
+
+  // Store latest metrics from agent
+  if (body.metrics) {
+    update.metrics = {
+      uptimeSec: body.metrics.uptimeSec ?? 0,
+      load1: body.metrics.load1 ?? 0,
+      memFreeMb: body.metrics.memFreeMb ?? 0,
+      ...(body.metrics.diskFreeGb !== undefined ? { diskFreeGb: body.metrics.diskFreeGb } : {}),
+    };
+  }
 
   // Auto-transition booting → ready on first healthy heartbeat
   if (currentStatus === "booting" && openclawOk && cloudflaredOk) {

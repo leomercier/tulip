@@ -138,10 +138,19 @@ export interface Runtime {
   status: RuntimeStatus;
   subdomain: string;
   createdAt: string;
+  /** Set on first successful heartbeat from the agent */
+  agentConnectedAt: string | null;
   lastHeartbeatAt: string | null;
   openclawHealthy: boolean | null;
   cloudflaredHealthy: boolean | null;
   lastError: string | null;
+  /** System metrics from the most recent heartbeat */
+  metrics: {
+    uptimeSec: number;
+    load1: number;
+    memFreeMb: number;
+    diskFreeGb?: number;
+  } | null;
 }
 
 /** Stored at runtimes/{instanceId} — instance-scoped metadata */

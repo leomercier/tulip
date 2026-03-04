@@ -127,9 +127,20 @@ write_files:
       COMMAND_POLL_INTERVAL_SEC=15
       AGENT_EOF
 
-      # Download + install runtime agent
-      npm install -g @tulip/runtime-agent@latest 2>/dev/null || \\
-        curl -fsSL "$CONTROL_PLANE_BASE_URL/agent/latest.js" -o /opt/tulip/agent/agent.js
+      # Download runtime agent bundle
+      AGENT_URL="$CONTROL_PLANE_BASE_URL/agent.js"
+      echo "Downloading agent from $AGENT_URL..."
+      for i in $(seq 1 5); do
+        curl -fsSL "$AGENT_URL" -o /opt/tulip/agent/agent.js && break || {
+          echo "Agent download attempt $i failed, retrying in 10s..."
+          sleep 10
+        }
+      done
+
+      if [ ! -s /opt/tulip/agent/agent.js ]; then
+        echo "ERROR: Failed to download agent bundle"
+        exit 1
+      fi
 
       cat > /etc/systemd/system/tulip-agent.service <<SYSTEMD_EOF
       [Unit]
