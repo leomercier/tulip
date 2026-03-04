@@ -112,6 +112,7 @@ export default function RuntimePage() {
                 instanceId={runtime.instanceId}
                 commands={commands}
               />
+              <DebugPanel runtime={runtime} />
             </div>
           </div>
           <div className="flex-1 overflow-hidden min-h-0">

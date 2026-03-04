@@ -61,7 +61,7 @@ export async function createTunnel(instanceId: string): Promise<TunnelResult> {
     {
       config: {
         ingress: [
-          { hostname, service: "http://localhost:3000" },
+          { hostname, service: "http://localhost:18789" },
           { service: "http_status:404" },
         ],
       },
