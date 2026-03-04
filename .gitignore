@@ -39,3 +39,4 @@ firestore-debug.log
 ui-debug.log
 
 functions/lib
+packages/cloud-init/lib

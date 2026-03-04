@@ -4,7 +4,7 @@ exports.CLOUD_INIT_TEMPLATE = void 0;
 /**
  * Cloud-init YAML template.
  *
- * Uses {{PLACEHOLDER}} substitution — no external template engine required.
+ * Uses {{PLACEHOLDER}} substitution - no external template engine required.
  * All values are injected by renderCloudInit() before passing to the DO API.
  */
 exports.CLOUD_INIT_TEMPLATE = `#cloud-config
@@ -32,7 +32,13 @@ write_files:
       source /opt/tulip/bootstrap.env
 
       apt-get update -y
-      apt-get install -y curl jq ca-certificates nodejs npm
+      apt-get install -y curl jq ca-certificates
+
+      # Install Node.js 22 LTS via NodeSource
+      if ! command -v node >/dev/null 2>&1; then
+        curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+        apt-get install -y nodejs
+      fi
 
       # Install Docker
       if ! command -v docker >/dev/null 2>&1; then
@@ -79,11 +85,11 @@ write_files:
       RUNTIME_AUTH_TOKEN=$(echo "$RESP" | jq -r .runtimeAuthToken)
       OPENCLAW_IMG=$(echo "$RESP" | jq -r .openclaw.image)
 
-      # ── OpenClaw ─────────────────────────────────────────────────────────────
+      # ---- OpenClaw ----
       mkdir -p /opt/tulip/openclaw
 
       printf 'PORT=3000\\nBIND_HOST=127.0.0.1\\nINSTANCE_ID=%s\\n' "$INSTANCE_ID" > /opt/tulip/openclaw/.env
-      echo "$RESP" | jq -r '.openclaw.env | to_entries[] | "\\(.key)=\\(.value)"' >> /opt/tulip/openclaw/.env
+      echo "$RESP" | jq -r '.openclaw.env | to_entries[] | .key + "=" + .value' >> /opt/tulip/openclaw/.env
 
       cat > /etc/systemd/system/openclaw.service <<SYSTEMD_EOF
       [Unit]
@@ -102,7 +108,7 @@ write_files:
       WantedBy=multi-user.target
       SYSTEMD_EOF
 
-      # ── Cloudflare Tunnel ─────────────────────────────────────────────────────
+      # ---- Cloudflare Tunnel ----
       cat > /etc/systemd/system/cloudflared.service <<SYSTEMD_EOF
       [Unit]
       Description=Cloudflare Tunnel
@@ -117,7 +123,7 @@ write_files:
       WantedBy=multi-user.target
       SYSTEMD_EOF
 
-      # ── Runtime Agent ─────────────────────────────────────────────────────────
+      # ---- Runtime Agent ----
       mkdir -p /opt/tulip/agent
 
       cat > /opt/tulip/agent/.env <<AGENT_EOF
@@ -130,9 +136,10 @@ write_files:
       COMMAND_POLL_INTERVAL_SEC=15
       AGENT_EOF
 
-      # Download + install runtime agent
-      npm install -g @tulip/runtime-agent@latest 2>/dev/null || \\
-        curl -fsSL "$CONTROL_PLANE_BASE_URL/agent/latest.js" -o /opt/tulip/agent/agent.js
+      # Pre-warm npx cache so the service starts offline-capable after first boot
+      HOME=/opt/tulip/agent NPM_CONFIG_CACHE=/opt/tulip/agent/.npm \
+        npx --yes @crowdform/tulip-runtime-agent --version 2>/dev/null || \
+        echo "WARN: npx pre-warm failed; service will attempt download on first start"
 
       cat > /etc/systemd/system/tulip-agent.service <<SYSTEMD_EOF
       [Unit]
@@ -143,13 +150,15 @@ write_files:
       Restart=always
       RestartSec=10
       EnvironmentFile=/opt/tulip/agent/.env
-      ExecStart=/usr/bin/node /opt/tulip/agent/agent.js
+      Environment=HOME=/opt/tulip/agent
+      Environment=NPM_CONFIG_CACHE=/opt/tulip/agent/.npm
+      ExecStart=/usr/bin/npx --yes @crowdform/tulip-runtime-agent
 
       [Install]
       WantedBy=multi-user.target
       SYSTEMD_EOF
 
-      # ── Start everything ──────────────────────────────────────────────────────
+      # ---- Start everything ----
       systemctl daemon-reload
       systemctl enable openclaw cloudflared tulip-agent
       systemctl start openclaw cloudflared tulip-agent

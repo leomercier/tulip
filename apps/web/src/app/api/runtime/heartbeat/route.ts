@@ -32,8 +32,10 @@ export async function POST(request: NextRequest) {
     cloudflaredHealthy: cloudflaredOk,
   };
 
-  // Auto-transition booting → ready on first healthy heartbeat
-  if (currentStatus === "booting" && openclawOk && cloudflaredOk) {
+  // Transition booting → ready on first heartbeat from the agent.
+  // openclaw/cloudflared health is tracked separately via openclawHealthy/cloudflaredHealthy —
+  // don't block on them since Docker image pull and tunnel establishment can take minutes.
+  if (currentStatus === "booting") {
     update.status = "ready";
   }
 

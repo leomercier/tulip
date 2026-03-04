@@ -1,20 +1,23 @@
 {
-  "name": "@tulip/runtime-agent",
-  "version": "0.1.0",
-  "private": true,
+  "name": "@crowdform/tulip-runtime-agent",
+  "version": "0.1.2",
+  "private": false,
   "main": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
   "bin": {
-    "tulip-agent": "./dist/index.js"
+    "tulip-agent": "./dist/index.js",
+    "tulip-runtime-agent": "./dist/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && chmod +x dist/index.js",
     "dev": "tsx --env-file .env src/index.ts",
-    "clean": "rm -rf dist"
-  },
-  "dependencies": {
-    "@tulip/types": "workspace:*"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "chmod +x dist/index.js"
   },
   "devDependencies": {
+    "@tulip/types": "workspace:*",
     "@types/node": "^20.14.2",
     "tsx": "^4.15.2",
     "typescript": "^5.4.5"

@@ -98,8 +98,8 @@ export async function POST(request: NextRequest) {
     body: JSON.stringify({
       name: `tulip-${orgId.slice(0, 8)}-${instanceId}`,
       region: DO_REGION,
-      size: "s-1vcpu-1gb",
-      image: "ubuntu-22-04-x64",
+      size: "s-2vcpu-4gb",
+      image: "ubuntu-24-04-x64",
       monitoring: true,
       ipv6: false,
       backups: false,

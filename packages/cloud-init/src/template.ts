@@ -29,7 +29,13 @@ write_files:
       source /opt/tulip/bootstrap.env
 
       apt-get update -y
-      apt-get install -y curl jq ca-certificates nodejs npm
+      apt-get install -y curl jq ca-certificates
+
+      # Install Node.js 22 LTS via NodeSource
+      if ! command -v node >/dev/null 2>&1; then
+        curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+        apt-get install -y nodejs
+      fi
 
       # Install Docker
       if ! command -v docker >/dev/null 2>&1; then
@@ -127,9 +133,10 @@ write_files:
       COMMAND_POLL_INTERVAL_SEC=15
       AGENT_EOF
 
-      # Download + install runtime agent
-      npm install -g @tulip/runtime-agent@latest 2>/dev/null || \\
-        curl -fsSL "$CONTROL_PLANE_BASE_URL/agent/latest.js" -o /opt/tulip/agent/agent.js
+      # Pre-warm npx cache so the service starts offline-capable after first boot
+      HOME=/opt/tulip/agent NPM_CONFIG_CACHE=/opt/tulip/agent/.npm \
+        npx --yes @crowdform/tulip-runtime-agent --version 2>/dev/null || \
+        echo "WARN: npx pre-warm failed; service will attempt download on first start"
 
       cat > /etc/systemd/system/tulip-agent.service <<SYSTEMD_EOF
       [Unit]
@@ -140,7 +147,9 @@ write_files:
       Restart=always
       RestartSec=10
       EnvironmentFile=/opt/tulip/agent/.env
-      ExecStart=/usr/bin/node /opt/tulip/agent/agent.js
+      Environment=HOME=/opt/tulip/agent
+      Environment=NPM_CONFIG_CACHE=/opt/tulip/agent/.npm
+      ExecStart=/usr/bin/npx --yes @crowdform/tulip-runtime-agent
 
       [Install]
       WantedBy=multi-user.target
