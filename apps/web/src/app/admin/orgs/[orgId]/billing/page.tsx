@@ -15,8 +15,7 @@ import {
   Minus,
 } from "lucide-react";
 import Link from "next/link";
-import toast from "react-hot-toast";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 
 interface LedgerRow {
   id: string;
@@ -52,7 +51,6 @@ export default function AdminOrgBillingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Credit grant form state
   const [creditAmount, setCreditAmount] = useState("");
   const [creditDesc, setCreditDesc] = useState("");
   const [granting, setGranting] = useState(false);
@@ -112,7 +110,7 @@ export default function AdminOrgBillingPage() {
     <div className="p-4 sm:p-8 max-w-3xl mx-auto space-y-8 animate-fade-in">
       <Toaster
         position="top-right"
-        toastOptions={{ className: "!bg-zinc-800 !text-zinc-100 !border !border-zinc-700" }}
+        toastOptions={{ className: "!bg-white !text-gray-900 !border !border-gray-200 !shadow-md" }}
       />
 
       <div className="flex items-center gap-4">
@@ -123,43 +121,43 @@ export default function AdminOrgBillingPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-100">
+          <h1 className="text-2xl font-semibold text-gray-900">
             {loading ? "…" : data?.org.name ?? "Org"} — Billing
           </h1>
-          <p className="text-sm text-zinc-500 font-mono">{params.orgId}</p>
+          <p className="text-sm text-gray-400 font-mono">{params.orgId}</p>
         </div>
       </div>
 
       {loading ? (
         <div className="flex justify-center py-20">
-          <Loader2 className="w-6 h-6 animate-spin text-zinc-500" />
+          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
         </div>
       ) : error ? (
-        <p className="text-sm text-red-400">{error}</p>
+        <p className="text-sm text-red-600">{error}</p>
       ) : (
         <>
           {/* Balance */}
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-zinc-400" />
-                <h2 className="text-sm font-medium text-zinc-200">Current balance</h2>
+                <CreditCard className="w-4 h-4 text-gray-400" />
+                <h2 className="text-sm font-medium text-gray-800">Current balance</h2>
               </div>
             </CardHeader>
             <CardContent>
               <div className="flex items-end gap-3">
-                <p className="text-4xl font-bold tabular-nums text-zinc-100">
+                <p className="text-4xl font-bold tabular-nums text-gray-900">
                   {credits.toLocaleString()}
                 </p>
-                <p className="text-sm text-zinc-500 mb-1">
+                <p className="text-sm text-gray-500 mb-1">
                   credits · ${(credits / 100).toFixed(2)} USD
                 </p>
               </div>
-              <p className="text-xs text-zinc-600 mt-2">
+              <p className="text-xs text-gray-400 mt-2">
                 Status:{" "}
                 <span
                   className={
-                    data?.billing?.status === "active" ? "text-green-400" : "text-yellow-400"
+                    data?.billing?.status === "active" ? "text-green-600" : "text-yellow-600"
                   }
                 >
                   {data?.billing?.status ?? "no billing account"}
@@ -171,8 +169,8 @@ export default function AdminOrgBillingPage() {
           {/* Adjust credits */}
           <Card>
             <CardHeader>
-              <h2 className="text-sm font-medium text-zinc-200">Adjust credits</h2>
-              <p className="text-xs text-zinc-500 mt-0.5">
+              <h2 className="text-sm font-medium text-gray-800">Adjust credits</h2>
+              <p className="text-xs text-gray-500 mt-0.5">
                 Positive value adds credits. Negative value deducts. 1 credit = $0.01 USD.
               </p>
             </CardHeader>
@@ -184,7 +182,7 @@ export default function AdminOrgBillingPage() {
                     value={creditAmount}
                     onChange={(e) => setCreditAmount(e.target.value)}
                     placeholder="e.g. 10000"
-                    className="w-full sm:w-32 text-sm bg-zinc-800 border border-zinc-700 text-zinc-200 placeholder-zinc-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-red-500"
+                    className="w-full sm:w-32 text-sm bg-white border border-gray-300 text-gray-900 placeholder-gray-400 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-400"
                     required
                   />
                   <input
@@ -192,7 +190,7 @@ export default function AdminOrgBillingPage() {
                     value={creditDesc}
                     onChange={(e) => setCreditDesc(e.target.value)}
                     placeholder="Description (optional)"
-                    className="flex-1 text-sm bg-zinc-800 border border-zinc-700 text-zinc-200 placeholder-zinc-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-red-500"
+                    className="flex-1 text-sm bg-white border border-gray-300 text-gray-900 placeholder-gray-400 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-400"
                   />
                 </div>
                 <div className="flex gap-2">
@@ -204,7 +202,7 @@ export default function AdminOrgBillingPage() {
                       const n = Math.abs(parseInt(creditAmount || "0", 10));
                       setCreditAmount(n.toString());
                     }}
-                    className="text-green-400 border-green-800/50"
+                    className="text-green-700 border-green-200"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     Add
@@ -217,7 +215,7 @@ export default function AdminOrgBillingPage() {
                       const n = Math.abs(parseInt(creditAmount || "0", 10));
                       setCreditAmount((-n).toString());
                     }}
-                    className="text-red-400 border-red-800/50"
+                    className="text-red-600 border-red-200"
                   >
                     <Minus className="w-3.5 h-3.5" />
                     Deduct
@@ -233,43 +231,43 @@ export default function AdminOrgBillingPage() {
           {/* Ledger */}
           <Card>
             <CardHeader>
-              <h2 className="text-sm font-medium text-zinc-200">
+              <h2 className="text-sm font-medium text-gray-800">
                 Transaction history{" "}
-                <span className="text-zinc-500">({data?.entries.length ?? 0})</span>
+                <span className="text-gray-400">({data?.entries.length ?? 0})</span>
               </h2>
             </CardHeader>
             <CardContent>
               {data?.entries.length === 0 ? (
-                <p className="text-sm text-zinc-600 py-4 text-center">No transactions.</p>
+                <p className="text-sm text-gray-400 py-4 text-center">No transactions.</p>
               ) : (
-                <ul className="divide-y divide-zinc-800">
+                <ul className="divide-y divide-gray-100">
                   {data?.entries.map((entry) => (
                     <li key={entry.id} className="flex items-center gap-4 py-3">
                       <div className="shrink-0">
                         {entry.amount >= 0 ? (
-                          <TrendingUp className="w-4 h-4 text-green-400" />
+                          <TrendingUp className="w-4 h-4 text-green-600" />
                         ) : (
-                          <TrendingDown className="w-4 h-4 text-zinc-500" />
+                          <TrendingDown className="w-4 h-4 text-gray-400" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-zinc-200 truncate">{entry.description}</p>
+                        <p className="text-sm text-gray-800 truncate">{entry.description}</p>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs text-zinc-500">
+                          <span className="text-xs text-gray-500">
                             {TYPE_LABELS[entry.type] ?? entry.type}
                           </span>
                           {entry.createdAt && (
                             <>
-                              <span className="text-zinc-700">·</span>
-                              <span className="text-xs text-zinc-600">
+                              <span className="text-gray-300">·</span>
+                              <span className="text-xs text-gray-400">
                                 {new Date(entry.createdAt).toLocaleString()}
                               </span>
                             </>
                           )}
                           {entry.createdByUid && (
                             <>
-                              <span className="text-zinc-700">·</span>
-                              <span className="text-xs text-zinc-600 font-mono truncate max-w-[120px]">
+                              <span className="text-gray-300">·</span>
+                              <span className="text-xs text-gray-400 font-mono truncate max-w-[120px]">
                                 {entry.createdByUid}
                               </span>
                             </>
@@ -279,13 +277,13 @@ export default function AdminOrgBillingPage() {
                       <div className="text-right shrink-0">
                         <p
                           className={`text-sm font-mono font-medium tabular-nums ${
-                            entry.amount >= 0 ? "text-green-400" : "text-zinc-400"
+                            entry.amount >= 0 ? "text-green-600" : "text-gray-500"
                           }`}
                         >
                           {entry.amount >= 0 ? "+" : ""}
                           {entry.amount.toLocaleString()}
                         </p>
-                        <p className="text-xs text-zinc-600 tabular-nums">
+                        <p className="text-xs text-gray-400 tabular-nums">
                           bal. {entry.balanceAfter.toLocaleString()}
                         </p>
                       </div>

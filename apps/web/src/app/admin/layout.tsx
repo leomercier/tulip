@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { useOrgContext } from "@/lib/context/OrgContext";
+import { OrgProvider, useOrgContext } from "@/lib/context/OrgContext";
 import { auth } from "@/lib/firebase/client";
 import {
   Flower2,
@@ -24,32 +24,27 @@ const ADMIN_NAV = [
   { href: "/admin/orgs", label: "Organisations", icon: Building2 },
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
-  const { profile, loading: orgLoading } = useOrgContext();
+  const { profile, loading: orgLoading, profileLoading } = useOrgContext();
   const router = useRouter();
   const pathname = usePathname();
   const [checking, setChecking] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    if (authLoading || orgLoading) return;
+    // Wait for auth, org, AND profile to finish loading before making any decision
+    if (authLoading || orgLoading || profileLoading) return;
     if (!user) {
       router.replace("/login?next=/admin");
       return;
     }
-    // Give profile a moment to load before checking superAdmin
-    if (profile !== null) {
-      if (!profile.superAdmin) {
-        router.replace("/app");
-      }
-      setChecking(false);
-    }
-    // If profile is still null but org loading finished, user has no profile yet
-    if (!orgLoading && profile === null) {
+    if (!profile?.superAdmin) {
       router.replace("/app");
+      return;
     }
-  }, [user, authLoading, orgLoading, profile, router]);
+    setChecking(false);
+  }, [user, authLoading, orgLoading, profileLoading, profile, router]);
 
   function isActive(href: string, exact = false) {
     if (exact) return pathname === href;
@@ -67,10 +62,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setSidebarOpen(false);
   }
 
-  if (authLoading || orgLoading || checking) {
+  if (authLoading || orgLoading || profileLoading || checking) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-zinc-950">
-        <Loader2 className="w-6 h-6 animate-spin text-tulip-400" />
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
       </div>
     );
   }
@@ -78,11 +73,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!user || !profile?.superAdmin) return null;
 
   return (
-    <div className="flex min-h-screen bg-zinc-950">
+    <div className="flex min-h-screen bg-white">
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 md:hidden"
+          className="fixed inset-0 z-40 bg-black/40 md:hidden"
           onClick={() => setSidebarOpen(false)}
           aria-hidden
         />
@@ -91,7 +86,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Admin sidebar */}
       <aside
         className={cn(
-          "flex flex-col w-60 border-r border-red-900/30 bg-zinc-950/80 backdrop-blur",
+          "flex flex-col w-56 border-r border-gray-200 bg-white",
           "fixed inset-y-0 left-0 z-50 h-full",
           "transform transition-transform duration-200 ease-in-out",
           "md:relative md:h-auto md:min-h-screen md:translate-x-0",
@@ -99,34 +94,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         )}
       >
         {/* Logo + badge */}
-        <div className="flex items-center gap-3 px-5 py-5 border-b border-red-900/30">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-600/20 ring-1 ring-red-500/30">
-            <ShieldAlert className="w-4 h-4 text-red-400" />
+        <div className="flex items-center gap-3 px-5 py-5 border-b border-gray-200">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 ring-1 ring-red-200">
+            <ShieldAlert className="w-4 h-4 text-red-500" />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-zinc-100 truncate">Tulip Admin</p>
-            <p className="text-xs text-red-400 truncate">Superadmin</p>
+            <p className="text-sm font-semibold text-gray-900 truncate">Tulip Admin</p>
+            <p className="text-xs text-red-500 truncate">Superadmin</p>
           </div>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-0.5">
+        <nav className="flex-1 px-3 py-3 space-y-0.5">
           {ADMIN_NAV.map(({ href, label, icon: Icon, exact }) => (
             <Link
               key={href}
               href={href}
               onClick={handleNavClick}
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
                 isActive(href, exact)
-                  ? "bg-zinc-800 text-zinc-100"
-                  : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50"
+                  ? "bg-gray-100 text-gray-900 font-medium"
+                  : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
               )}
             >
               <Icon
                 className={cn(
                   "w-4 h-4 shrink-0",
-                  isActive(href, exact) ? "text-red-400" : "text-zinc-500"
+                  isActive(href, exact) ? "text-red-500" : "text-gray-400"
                 )}
               />
               {label}
@@ -137,30 +132,30 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link
             href="/app"
             onClick={handleNavClick}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800/50 transition-colors mt-4"
+            className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-colors mt-4"
           >
-            <Flower2 className="w-4 h-4 shrink-0 text-tulip-500" />
+            <Flower2 className="w-4 h-4 shrink-0 text-gray-400" />
             Back to app
           </Link>
         </nav>
 
         {/* User */}
-        <div className="px-3 py-4 border-t border-red-900/30">
-          <div className="flex items-center gap-3 px-3 py-2">
+        <div className="px-3 py-4 border-t border-gray-200">
+          <div className="flex items-center gap-3 px-2 py-2">
             {user.photoURL ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={user.photoURL}
                 alt={user.displayName ?? "User"}
-                className="w-7 h-7 rounded-full ring-1 ring-red-700"
+                className="w-7 h-7 rounded-full ring-1 ring-gray-200 shrink-0"
               />
             ) : (
-              <div className="w-7 h-7 rounded-full bg-red-700 flex items-center justify-center text-xs font-medium text-white">
+              <div className="w-7 h-7 rounded-full bg-gray-900 flex items-center justify-center text-xs font-medium text-white shrink-0">
                 {(user.displayName ?? user.email ?? "U")[0]?.toUpperCase()}
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-zinc-200 truncate">
+              <p className="text-xs font-medium text-gray-800 truncate">
                 {user.displayName ?? user.email}
               </p>
               <p className="text-xs text-red-500 truncate">superadmin</p>
@@ -168,7 +163,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <button
             onClick={handleSignOut}
-            className="flex w-full items-center gap-3 px-3 py-2 rounded-lg text-sm text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800/50 transition-colors mt-0.5"
+            className="flex w-full items-center gap-3 px-2 py-2 rounded-md text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors"
           >
             <LogOut className="w-4 h-4 shrink-0" />
             Sign out
@@ -178,18 +173,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Mobile header */}
-        <div className="md:hidden flex items-center gap-3 px-4 py-3 border-b border-red-900/30 bg-zinc-950 sticky top-0 z-30">
+        <div className="md:hidden flex items-center gap-3 px-4 py-3 border-b border-gray-200 bg-white sticky top-0 z-30">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="p-1 -ml-1 text-zinc-500 hover:text-zinc-100 transition-colors"
+            className="p-1 -ml-1 text-gray-500 hover:text-gray-900 transition-colors"
             aria-label="Open menu"
           >
             <Menu className="w-5 h-5" />
           </button>
-          <span className="text-sm font-semibold text-zinc-100">Tulip Admin</span>
+          <span className="text-sm font-semibold text-gray-900">Tulip Admin</span>
         </div>
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>
+  );
+}
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+
+  return (
+    <OrgProvider uid={user?.uid ?? null}>
+      <AdminLayoutInner>{children}</AdminLayoutInner>
+    </OrgProvider>
   );
 }

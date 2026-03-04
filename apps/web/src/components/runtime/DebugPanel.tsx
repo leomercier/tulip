@@ -24,7 +24,7 @@ function CopyLine({ label, value }: { label: string; value: string }) {
     <div className="space-y-1">
       <p className="text-xs text-gray-500">{label}</p>
       <div className="flex items-center gap-2 rounded-md bg-gray-50 border border-gray-200 px-3 py-2">
-        <code className="flex-1 text-xs font-mono text-gray-700 break-all">{value}</code>
+        <code className="flex-1 text-xs font-mono text-gray-700 whitespace-nowrap overflow-x-auto">{value}</code>
         <button
           onClick={copy}
           title="Copy"

@@ -31,6 +31,7 @@ interface OrgContextValue {
   currentOrg: Org | null;
   profile: UserProfile | null;
   loading: boolean;
+  profileLoading: boolean;
   setCurrentOrgId: (orgId: string) => void;
 }
 
@@ -39,6 +40,7 @@ const OrgContext = createContext<OrgContextValue>({
   currentOrg: null,
   profile: null,
   loading: true,
+  profileLoading: true,
   setCurrentOrgId: () => {},
 });
 
@@ -52,6 +54,11 @@ export function OrgProvider({ uid, children }: { uid: string | null; children: R
     return localStorage.getItem(CURRENT_ORG_KEY);
   });
   const [loading, setLoading] = useState(true);
+  // Track which uid the profile snapshot was loaded for.
+  // Derived during render so it's immediately accurate when uid changes,
+  // avoiding the parent-effect vs child-effect race condition.
+  const [profileUid, setProfileUid] = useState<string | null>(null);
+  const profileLoading = uid !== null && profileUid !== uid;
 
   // Listen to user profile (gives us orgIds + superAdmin flag)
   useEffect(() => {
@@ -59,12 +66,14 @@ export function OrgProvider({ uid, children }: { uid: string | null; children: R
       setProfile(null);
       setOrgs([]);
       setLoading(false);
+      setProfileUid(null);
       return;
     }
 
     const ref = doc(db, "users", uid).withConverter(userProfileConverter);
     const unsubscribe = onSnapshot(ref, (snap) => {
       setProfile(snap.exists() ? snap.data() : null);
+      setProfileUid(uid);
     });
     return unsubscribe;
   }, [uid]);
@@ -130,7 +139,7 @@ export function OrgProvider({ uid, children }: { uid: string | null; children: R
     (currentOrgId ? orgs.find((o) => o.id === currentOrgId) ?? orgs[0] : orgs[0]) ?? null;
 
   return (
-    <OrgContext.Provider value={{ orgs, currentOrg, profile, loading, setCurrentOrgId }}>
+    <OrgContext.Provider value={{ orgs, currentOrg, profile, loading, profileLoading, setCurrentOrgId }}>
       {children}
     </OrgContext.Provider>
   );

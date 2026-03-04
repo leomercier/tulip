@@ -41,6 +41,11 @@ write_files:
       if ! command -v docker >/dev/null 2>&1; then
         curl -fsSL https://get.docker.com | sh
       fi
+      systemctl enable --now docker
+
+      # Enable persistent journald logs
+      mkdir -p /var/log/journal
+      systemctl restart systemd-journald || true
 
       # Install cloudflared
       if ! command -v cloudflared >/dev/null 2>&1; then
@@ -91,15 +96,19 @@ write_files:
       cat > /etc/systemd/system/openclaw.service <<SYSTEMD_EOF
       [Unit]
       Description=OpenClaw AI Runtime
-      After=docker.service
+      After=docker.service network-online.target
+      Wants=network-online.target
       Requires=docker.service
 
       [Service]
+      Type=exec
       Restart=always
       RestartSec=5
       ExecStartPre=-/usr/bin/docker stop openclaw
       ExecStartPre=-/usr/bin/docker rm openclaw
-      ExecStart=/usr/bin/docker run --name openclaw --rm --env-file /opt/tulip/openclaw/.env -p 127.0.0.1:18789:18789 $OPENCLAW_IMG openclaw gateway --port 18789
+      ExecStart=/usr/bin/docker run --name openclaw --env-file /opt/tulip/openclaw/.env -p 127.0.0.1:\${OPENCLAW_PORT}:18789 \${OPENCLAW_IMG} openclaw gateway --port 18789 --allow-unconfigured
+      ExecStop=/usr/bin/docker stop openclaw
+      TimeoutStopSec=30
 
       [Install]
       WantedBy=multi-user.target
@@ -141,7 +150,9 @@ write_files:
       cat > /etc/systemd/system/tulip-agent.service <<SYSTEMD_EOF
       [Unit]
       Description=Tulip Runtime Agent
-      After=network.target openclaw.service
+      After=network-online.target openclaw.service
+      Wants=network-online.target
+      Requires=openclaw.service
 
       [Service]
       Restart=always
