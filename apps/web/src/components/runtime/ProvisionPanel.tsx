@@ -176,6 +176,28 @@ export function ProvisionPanel({ runtime, hasSlack, onProvisioned }: ProvisionPa
               {runtime.instanceId}
             </code>
           </CardContent>
+          {runtime.status !== "deleting" && (
+            <CardFooter className="justify-center gap-3">
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDeprovision}
+                loading={deprovisioning}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                {confirmDelete ? "Confirm — delete anyway" : "Force delete"}
+              </Button>
+              {confirmDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setConfirmDelete(false)}
+                >
+                  Cancel
+                </Button>
+              )}
+            </CardFooter>
+          )}
         </Card>
       )}
 
@@ -266,7 +288,7 @@ export function ProvisionPanel({ runtime, hasSlack, onProvisioned }: ProvisionPa
               ))}
             </dl>
           </CardContent>
-          {!isTransitioning && (
+          {runtime.status !== "deleting" && (
             <CardFooter>
               <Button
                 variant="destructive"

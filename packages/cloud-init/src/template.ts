@@ -1,7 +1,7 @@
 /**
  * Cloud-init YAML template.
  *
- * Uses {{PLACEHOLDER}} substitution — no external template engine required.
+ * Uses {{PLACEHOLDER}} substitution - no external template engine required.
  * All values are injected by renderCloudInit() before passing to the DO API.
  */
 export const CLOUD_INIT_TEMPLATE = `#cloud-config
@@ -76,11 +76,11 @@ write_files:
       RUNTIME_AUTH_TOKEN=$(echo "$RESP" | jq -r .runtimeAuthToken)
       OPENCLAW_IMG=$(echo "$RESP" | jq -r .openclaw.image)
 
-      # ── OpenClaw ─────────────────────────────────────────────────────────────
+      # ---- OpenClaw ----
       mkdir -p /opt/tulip/openclaw
 
       printf 'PORT=3000\\nBIND_HOST=127.0.0.1\\nINSTANCE_ID=%s\\n' "$INSTANCE_ID" > /opt/tulip/openclaw/.env
-      echo "$RESP" | jq -r '.openclaw.env | to_entries[] | "\\(.key)=\\(.value)"' >> /opt/tulip/openclaw/.env
+      echo "$RESP" | jq -r '.openclaw.env | to_entries[] | .key + "=" + .value' >> /opt/tulip/openclaw/.env
 
       cat > /etc/systemd/system/openclaw.service <<SYSTEMD_EOF
       [Unit]
@@ -99,7 +99,7 @@ write_files:
       WantedBy=multi-user.target
       SYSTEMD_EOF
 
-      # ── Cloudflare Tunnel ─────────────────────────────────────────────────────
+      # ---- Cloudflare Tunnel ----
       cat > /etc/systemd/system/cloudflared.service <<SYSTEMD_EOF
       [Unit]
       Description=Cloudflare Tunnel
@@ -114,7 +114,7 @@ write_files:
       WantedBy=multi-user.target
       SYSTEMD_EOF
 
-      # ── Runtime Agent ─────────────────────────────────────────────────────────
+      # ---- Runtime Agent ----
       mkdir -p /opt/tulip/agent
 
       cat > /opt/tulip/agent/.env <<AGENT_EOF
@@ -146,7 +146,7 @@ write_files:
       WantedBy=multi-user.target
       SYSTEMD_EOF
 
-      # ── Start everything ──────────────────────────────────────────────────────
+      # ---- Start everything ----
       systemctl daemon-reload
       systemctl enable openclaw cloudflared tulip-agent
       systemctl start openclaw cloudflared tulip-agent
