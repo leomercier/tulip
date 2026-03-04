@@ -12,9 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   CheckCircle2,
-  AlertCircle,
   ExternalLink,
-  MessageSquare,
   MessageCircle,
   Loader2,
 } from "lucide-react";
@@ -51,7 +49,6 @@ function IntegrationsContent() {
   async function ensureOrgExists(): Promise<string> {
     if (org) return org.id;
 
-    // Create org via API (also sets up member record + billing account)
     const idToken = await auth.currentUser?.getIdToken();
     if (!idToken || !user) throw new Error("Not authenticated");
 
@@ -80,18 +77,18 @@ function IntegrationsContent() {
   if (orgLoading || slackLoading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <Loader2 className="w-5 h-5 animate-spin text-zinc-500" />
+        <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
       </div>
     );
   }
 
   return (
     <div className="p-8 max-w-3xl mx-auto space-y-8 animate-fade-in">
-      <Toaster position="top-right" toastOptions={{ className: "!bg-zinc-800 !text-zinc-100 !border !border-zinc-700" }} />
+      <Toaster position="top-right" toastOptions={{ className: "!bg-white !text-gray-900 !border !border-gray-200 !shadow-md" }} />
 
       <div>
-        <h1 className="text-2xl font-semibold text-zinc-100">Integrations</h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <h1 className="text-2xl font-semibold text-gray-900">Integrations</h1>
+        <p className="mt-1 text-sm text-gray-500">
           Connect your messaging platforms to Tulip.
         </p>
       </div>
@@ -101,12 +98,12 @@ function IntegrationsContent() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-[#4A154B]/30 border border-[#4A154B]/50 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-lg bg-[#4A154B]/10 border border-[#4A154B]/20 flex items-center justify-center">
                 <SlackLogo />
               </div>
               <div>
-                <h2 className="text-sm font-medium text-zinc-200">Slack</h2>
-                <p className="text-xs text-zinc-500">
+                <h2 className="text-sm font-medium text-gray-800">Slack</h2>
+                <p className="text-xs text-gray-500">
                   Receive and respond to messages in your workspace
                 </p>
               </div>
@@ -126,35 +123,35 @@ function IntegrationsContent() {
           {slack ? (
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm">
-                <span className="text-zinc-500">Workspace</span>
-                <span className="text-zinc-200 font-medium">{slack.teamName || slack.teamId}</span>
+                <span className="text-gray-500">Workspace</span>
+                <span className="text-gray-800 font-medium">{slack.teamName || slack.teamId}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <span className="text-zinc-500">Team ID</span>
-                <code className="text-xs font-mono text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded">
+                <span className="text-gray-500">Team ID</span>
+                <code className="text-xs font-mono text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
                   {slack.teamId}
                 </code>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <span className="text-zinc-500">Installed</span>
-                <span className="text-zinc-400">{formatRelativeTime(slack.installedAt)}</span>
+                <span className="text-gray-500">Installed</span>
+                <span className="text-gray-600">{formatRelativeTime(slack.installedAt)}</span>
               </div>
             </div>
           ) : (
             <div className="space-y-3">
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-gray-600">
                 Connect your Slack workspace to allow the agent to send and
                 receive messages. The agent will be available as a Slack app in
                 your workspace.
               </p>
-              <ul className="space-y-1.5 text-sm text-zinc-500">
+              <ul className="space-y-1.5 text-sm text-gray-500">
                 {[
                   "Respond to messages in channels and DMs",
                   "Handle slash commands",
                   "Send proactive notifications",
                 ].map((f) => (
                   <li key={f} className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-zinc-600 shrink-0" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                     {f}
                   </li>
                 ))}
@@ -176,7 +173,7 @@ function IntegrationsContent() {
                   <ExternalLink className="w-3.5 h-3.5" />
                 </Button>
               </a>
-              <p className="text-xs text-zinc-600">
+              <p className="text-xs text-gray-400">
                 To disconnect, uninstall the Tulip app from your Slack workspace.
               </p>
             </div>
@@ -202,8 +199,8 @@ function IntegrationsContent() {
                 <MessageCircle className="w-5 h-5 text-[#25D366]" />
               </div>
               <div>
-                <h2 className="text-sm font-medium text-zinc-200">WhatsApp</h2>
-                <p className="text-xs text-zinc-500">
+                <h2 className="text-sm font-medium text-gray-800">WhatsApp</h2>
+                <p className="text-xs text-gray-500">
                   Connect via WhatsApp Business API
                 </p>
               </div>
@@ -212,7 +209,7 @@ function IntegrationsContent() {
           </div>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-gray-500">
             WhatsApp integration will be available in a future release. Stay
             tuned.
           </p>
@@ -275,7 +272,7 @@ export default function IntegrationsPage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center py-32">
-        <Loader2 className="w-5 h-5 animate-spin text-zinc-500" />
+        <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
       </div>
     }>
       <IntegrationsContent />

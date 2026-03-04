@@ -19,11 +19,11 @@ export function Button({
 }: ButtonProps) {
   const variants = {
     primary:
-      "bg-tulip-600 text-white hover:bg-tulip-500 focus-visible:ring-tulip-500 border-transparent",
+      "bg-gray-900 text-white hover:bg-gray-700 focus-visible:ring-gray-900 border-transparent",
     secondary:
-      "bg-zinc-800 text-zinc-100 hover:bg-zinc-700 focus-visible:ring-zinc-500 border-zinc-700",
+      "bg-gray-100 text-gray-800 hover:bg-gray-200 focus-visible:ring-gray-400 border-gray-200",
     ghost:
-      "bg-transparent text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 focus-visible:ring-zinc-500 border-transparent",
+      "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-gray-400 border-transparent",
     destructive:
       "bg-red-600 text-white hover:bg-red-500 focus-visible:ring-red-500 border-transparent",
   };
@@ -38,7 +38,7 @@ export function Button({
     <button
       className={cn(
         "inline-flex items-center justify-center rounded-lg border font-medium transition-all",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         variants[variant],
         sizes[size],

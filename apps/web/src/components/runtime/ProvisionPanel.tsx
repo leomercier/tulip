@@ -94,14 +94,14 @@ export function ProvisionPanel({ runtime, hasSlack, onProvisioned }: ProvisionPa
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center">
-                <Cpu className="w-5 h-5 text-zinc-400" />
+              <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
+                <Cpu className="w-5 h-5 text-gray-500" />
               </div>
               <div>
-                <h2 className="text-sm font-medium text-zinc-200">
+                <h2 className="text-sm font-medium text-gray-800">
                   No runtime provisioned
                 </h2>
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-gray-500">
                   Provision an isolated OpenClaw instance to get started.
                 </p>
               </div>
@@ -109,9 +109,9 @@ export function ProvisionPanel({ runtime, hasSlack, onProvisioned }: ProvisionPa
           </CardHeader>
           <CardContent className="space-y-4">
             {!hasSlack && (
-              <div className="flex items-start gap-3 rounded-lg border border-yellow-800/50 bg-yellow-950/20 p-3">
-                <AlertCircle className="w-4 h-4 text-yellow-500 shrink-0 mt-0.5" />
-                <p className="text-xs text-yellow-400">
+              <div className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
+                <AlertCircle className="w-4 h-4 text-yellow-600 shrink-0 mt-0.5" />
+                <p className="text-xs text-yellow-700">
                   You must connect Slack before provisioning a runtime.
                 </p>
               </div>
@@ -135,10 +135,10 @@ export function ProvisionPanel({ runtime, hasSlack, onProvisioned }: ProvisionPa
                 },
               ].map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="flex items-start gap-3 text-sm">
-                  <Icon className="w-4 h-4 text-zinc-500 mt-0.5 shrink-0" />
+                  <Icon className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
                   <div>
-                    <span className="font-medium text-zinc-300">{title}</span>
-                    <span className="text-zinc-500"> — {desc}</span>
+                    <span className="font-medium text-gray-700">{title}</span>
+                    <span className="text-gray-500"> — {desc}</span>
                   </div>
                 </div>
               ))}
@@ -159,20 +159,20 @@ export function ProvisionPanel({ runtime, hasSlack, onProvisioned }: ProvisionPa
 
       {/* Provisioning / Booting state */}
       {runtime && isTransitioning && (
-        <Card className="border-blue-800/40 bg-blue-950/10">
+        <Card className="border-blue-200 bg-blue-50">
           <CardContent className="py-8 flex flex-col items-center gap-4 text-center">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
             <div className="space-y-1">
-              <p className="text-sm font-medium text-zinc-200">
+              <p className="text-sm font-medium text-gray-800">
                 {runtime.status === "provisioning" && "Creating droplet…"}
                 {runtime.status === "booting" && "Runtime is booting…"}
                 {runtime.status === "deleting" && "Deleting runtime…"}
               </p>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-gray-500">
                 This usually takes 1–3 minutes. The page will update automatically.
               </p>
             </div>
-            <code className="text-xs font-mono text-zinc-600">
+            <code className="text-xs font-mono text-gray-400">
               {runtime.instanceId}
             </code>
           </CardContent>
@@ -203,14 +203,14 @@ export function ProvisionPanel({ runtime, hasSlack, onProvisioned }: ProvisionPa
 
       {/* Error state */}
       {runtime?.status === "error" && (
-        <Card className="border-red-800/40">
+        <Card className="border-red-200">
           <CardContent className="py-6 flex items-start gap-4">
-            <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
             <div className="flex-1 space-y-2">
-              <p className="text-sm font-medium text-zinc-200">
+              <p className="text-sm font-medium text-gray-800">
                 Runtime provisioning failed
               </p>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-gray-500">
                 The droplet encountered an error. You can retry provisioning.
               </p>
             </div>
@@ -238,7 +238,7 @@ export function ProvisionPanel({ runtime, hasSlack, onProvisioned }: ProvisionPa
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-medium text-zinc-200">
+              <h2 className="text-sm font-medium text-gray-800">
                 Runtime details
               </h2>
               <StatusBadge status={runtime.status} />
@@ -267,19 +267,19 @@ export function ProvisionPanel({ runtime, hasSlack, onProvisioned }: ProvisionPa
                 },
               ].map(({ label, value, mono, link }) => (
                 <div key={label} className="flex items-center gap-4">
-                  <dt className="w-32 text-zinc-500 shrink-0">{label}</dt>
-                  <dd className="text-zinc-200 min-w-0">
+                  <dt className="w-32 text-gray-500 shrink-0">{label}</dt>
+                  <dd className="text-gray-800 min-w-0">
                     {link ? (
                       <a
                         href={value}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`hover:underline text-tulip-400 ${mono ? "font-mono text-xs" : ""}`}
+                        className={`hover:underline text-gray-900 ${mono ? "font-mono text-xs" : ""}`}
                       >
                         {value}
                       </a>
                     ) : (
-                      <span className={mono ? "font-mono text-xs text-zinc-300" : ""}>
+                      <span className={mono ? "font-mono text-xs text-gray-700" : ""}>
                         {value}
                       </span>
                     )}

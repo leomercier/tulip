@@ -4,94 +4,32 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { signInWithGoogle, useAuth } from "@/lib/hooks/useAuth";
-import { Flower2, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 
-function LoginForm() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const next = searchParams.get("next") ?? "/app";
-  const [signing, setSigning] = useState(false);
-
-  // Redirect once Firebase confirms the user is signed in
-  useEffect(() => {
-    if (!loading && user) {
-      router.replace(next);
-    }
-  }, [user, loading, router, next]);
-
-  async function handleGoogleSignIn() {
-    setSigning(true);
-    try {
-      await signInWithGoogle();
-      // onAuthStateChanged will fire → useEffect above redirects
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Sign-in failed";
-      toast.error(msg);
-      setSigning(false);
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-zinc-950">
-        <Loader2 className="w-6 h-6 animate-spin text-tulip-400" />
-      </div>
-    );
-  }
-
+function TulipLogo({ className }: { className?: string }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-950 px-4">
-      <Toaster position="top-center" toastOptions={{ className: "!bg-zinc-800 !text-zinc-100" }} />
-
-      <div className="w-full max-w-sm space-y-8 animate-fade-in">
-        {/* Logo */}
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-tulip-600/20 ring-1 ring-tulip-500/30">
-            <Flower2 className="w-7 h-7 text-tulip-400" />
-          </div>
-          <div className="text-center">
-            <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">
-              Tulip
-            </h1>
-            <p className="mt-1 text-sm text-zinc-400">Agent Control Plane</p>
-          </div>
-        </div>
-
-        {/* Card */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-8 shadow-xl backdrop-blur">
-          <div className="space-y-2 mb-6">
-            <h2 className="text-lg font-medium text-zinc-100">Get started</h2>
-            <p className="text-sm text-zinc-500">
-              Sign in to your account, or create one if you&apos;re new.
-            </p>
-          </div>
-
-          <button
-            onClick={handleGoogleSignIn}
-            disabled={signing}
-            className="relative flex w-full items-center justify-center gap-3 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-sm font-medium text-zinc-100 transition-all hover:bg-zinc-700 hover:border-zinc-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tulip-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {signing ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <GoogleIcon />
-            )}
-            Continue with Google
-          </button>
-
-          <p className="mt-6 text-center text-xs text-zinc-600">
-            By continuing you agree to our terms of service.
-          </p>
-        </div>
-
-        {/* Footer */}
-        <p className="text-center text-xs text-zinc-700">
-          agents.tulip.ai — isolated runtimes per organisation
-        </p>
-      </div>
-    </div>
+    <svg
+      height="36"
+      viewBox="0 0 178 160"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden
+    >
+      <path
+        d="M158.33 33.6721L88.1205 103.882L18.6271 34.3886L34.3885 18.6272L77.3741 61.6128V6.10352e-05H100.3V61.6128L143.285 18.6272L158.33 33.6721Z"
+        fill="currentColor"
+      />
+      <path
+        d="M0 77.3742V99.5834H62.3292L18.6271 143.285L34.3885 159.047L79.5234 113.912L42.9856 77.3742H0Z"
+        fill="currentColor"
+      />
+      <path
+        d="M136.838 77.3742L99.2251 114.987L143.285 159.047L159.047 143.285L115.345 99.5834H177.674V77.3742H136.838Z"
+        fill="currentColor"
+      />
+    </svg>
   );
 }
 
@@ -118,13 +56,109 @@ function GoogleIcon() {
   );
 }
 
+function LoginForm() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next") ?? "/app";
+  const [signing, setSigning] = useState(false);
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace(next);
+    }
+  }, [user, loading, router, next]);
+
+  async function handleGoogleSignIn() {
+    setSigning(true);
+    try {
+      await signInWithGoogle();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Sign-in failed";
+      toast.error(msg);
+      setSigning(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen bg-white">
+      <Toaster
+        position="top-center"
+        toastOptions={{ className: "!bg-white !text-gray-900 !border !border-gray-200 !shadow-md" }}
+      />
+
+      {/* Left panel — branding */}
+      <div className="hidden lg:flex flex-col justify-between w-1/2 bg-gray-50 border-r border-gray-200 p-12">
+        <div className="flex items-center gap-3">
+          <TulipLogo className="text-gray-900" />
+          <span className="text-base font-semibold text-gray-900">Tulip</span>
+        </div>
+        <div className="space-y-4">
+          <p className="text-3xl font-semibold text-gray-900 leading-snug">
+            Isolated runtimes<br />for every team.
+          </p>
+          <p className="text-sm text-gray-500 max-w-xs">
+            Provision OpenClaw instances, connect Slack, and manage your AI agents from one place.
+          </p>
+        </div>
+        <p className="text-xs text-gray-400">agents.tulip.ai</p>
+      </div>
+
+      {/* Right panel — sign in */}
+      <div className="flex flex-1 flex-col items-center justify-center px-6 py-12">
+        <div className="w-full max-w-sm space-y-8 animate-fade-in">
+          {/* Mobile logo */}
+          <div className="flex items-center gap-3 lg:hidden">
+            <TulipLogo className="text-gray-900" />
+            <span className="text-base font-semibold text-gray-900">Tulip</span>
+          </div>
+
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">Sign in</h1>
+            <p className="mt-1.5 text-sm text-gray-500">
+              Welcome back. Sign in to continue.
+            </p>
+          </div>
+
+          <button
+            onClick={handleGoogleSignIn}
+            disabled={signing}
+            className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {signing ? (
+              <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+            ) : (
+              <GoogleIcon />
+            )}
+            Continue with Google
+          </button>
+
+          <p className="text-center text-xs text-gray-400">
+            By continuing you agree to our terms of service.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen bg-zinc-950">
-        <Loader2 className="w-6 h-6 animate-spin text-tulip-400" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen bg-white">
+          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        </div>
+      }
+    >
       <LoginForm />
     </Suspense>
   );

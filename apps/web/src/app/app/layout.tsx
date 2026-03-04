@@ -23,10 +23,10 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
 
   if (authLoading || orgLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-zinc-950">
+      <div className="flex items-center justify-center min-h-screen bg-white">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-6 h-6 animate-spin text-tulip-400" />
-          <p className="text-sm text-zinc-500">Loading…</p>
+          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+          <p className="text-sm text-gray-400">Loading…</p>
         </div>
       </div>
     );
@@ -35,10 +35,10 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   return (
-    <div className="flex min-h-screen bg-zinc-950">
+    <div className="flex min-h-screen bg-white">
       <Toaster
         position="top-right"
-        toastOptions={{ className: "!bg-zinc-800 !text-zinc-100 !border !border-zinc-700" }}
+        toastOptions={{ className: "!bg-white !text-gray-900 !border !border-gray-200 !shadow-md" }}
       />
       <Sidebar
         user={user}

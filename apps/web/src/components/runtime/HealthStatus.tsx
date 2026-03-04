@@ -9,12 +9,12 @@ type ServiceHealth = boolean | null;
 
 function HealthDot({ ok }: { ok: ServiceHealth }) {
   if (ok === null) {
-    return <HelpCircle className="w-4 h-4 text-zinc-600" />;
+    return <HelpCircle className="w-4 h-4 text-gray-400" />;
   }
   return ok ? (
-    <CheckCircle2 className="w-4 h-4 text-green-400" />
+    <CheckCircle2 className="w-4 h-4 text-green-600" />
   ) : (
-    <XCircle className="w-4 h-4 text-red-400" />
+    <XCircle className="w-4 h-4 text-red-600" />
   );
 }
 
@@ -31,9 +31,9 @@ function HealthRow({
 }) {
   return (
     <div className="flex items-center gap-3 py-2">
-      <Icon className="w-4 h-4 text-zinc-500 shrink-0" />
-      <span className="flex-1 text-sm text-zinc-300">{label}</span>
-      {detail && <span className="text-xs text-zinc-600">{detail}</span>}
+      <Icon className="w-4 h-4 text-gray-400 shrink-0" />
+      <span className="flex-1 text-sm text-gray-700">{label}</span>
+      {detail && <span className="text-xs text-gray-400">{detail}</span>}
       <HealthDot ok={ok} />
     </div>
   );
@@ -47,9 +47,9 @@ export function HealthStatus({ runtime }: HealthStatusProps) {
   return (
     <Card>
       <CardHeader>
-        <h3 className="text-sm font-medium text-zinc-200">Service health</h3>
+        <h3 className="text-sm font-medium text-gray-800">Service health</h3>
       </CardHeader>
-      <CardContent className="divide-y divide-zinc-800/60 py-0">
+      <CardContent className="divide-y divide-gray-200 py-0">
         <HealthRow
           icon={Server}
           label="OpenClaw"
@@ -63,14 +63,14 @@ export function HealthStatus({ runtime }: HealthStatusProps) {
           detail={runtime.cloudflaredHealthy ? runtime.hostname : undefined}
         />
         {runtime.lastHeartbeatAt && (
-          <div className="flex items-center gap-3 py-2 text-xs text-zinc-600">
+          <div className="flex items-center gap-3 py-2 text-xs text-gray-400">
             <span className="flex-1">Last check</span>
             <span>{formatRelativeTime(runtime.lastHeartbeatAt)}</span>
           </div>
         )}
         {runtime.lastError && (
           <div className="py-2">
-            <p className="text-xs text-red-400 font-mono break-all">{runtime.lastError}</p>
+            <p className="text-xs text-red-600 font-mono break-all">{runtime.lastError}</p>
           </div>
         )}
       </CardContent>

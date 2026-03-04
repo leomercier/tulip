@@ -29,7 +29,7 @@ export default function RuntimePage() {
   if (orgLoading || runtimeLoading) {
     return (
       <div className="flex items-center justify-center h-full py-32">
-        <Loader2 className="w-5 h-5 animate-spin text-zinc-500" />
+        <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
       </div>
     );
   }
@@ -38,23 +38,23 @@ export default function RuntimePage() {
     <div className="flex flex-col h-screen overflow-hidden">
       <Toaster
         position="top-right"
-        toastOptions={{ className: "!bg-zinc-800 !text-zinc-100 !border !border-zinc-700" }}
+        toastOptions={{ className: "!bg-white !text-gray-900 !border !border-gray-200 !shadow-md" }}
       />
 
       {/* Page header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur shrink-0">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white/80 backdrop-blur shrink-0">
         <div className="flex items-center gap-3">
-          <h1 className="text-sm font-medium text-zinc-200">Runtime</h1>
+          <h1 className="text-sm font-medium text-gray-800">Runtime</h1>
           {runtime && <StatusBadge status={runtime.status} />}
           {runtime && (
-            <code className="text-xs text-zinc-600 font-mono hidden sm:block">
+            <code className="text-xs text-gray-400 font-mono hidden sm:block">
               {runtime.instanceId}
             </code>
           )}
         </div>
 
         {isReady && (
-          <div className="flex items-center gap-1 p-1 rounded-lg bg-zinc-800/60 border border-zinc-700/50">
+          <div className="flex items-center gap-1 p-1 rounded-lg bg-gray-100 border border-gray-200">
             {(
               [
                 { mode: "split" as ViewMode, icon: SplitSquareVertical, label: "Split view" },
@@ -68,8 +68,8 @@ export default function RuntimePage() {
                 className={cn(
                   "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all",
                   viewMode === mode
-                    ? "bg-zinc-700 text-zinc-100"
-                    : "text-zinc-500 hover:text-zinc-300"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
                 )}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -105,7 +105,7 @@ export default function RuntimePage() {
       ) : (
         // Split: sidebar left with health + commands, iframe right
         <div className="flex flex-1 overflow-hidden">
-          <div className="w-72 shrink-0 overflow-y-auto border-r border-zinc-800 scrollbar-none">
+          <div className="w-72 shrink-0 overflow-y-auto border-r border-gray-200 scrollbar-none">
             <div className="p-4 space-y-4">
               <HealthStatus runtime={runtime} />
               <CommandPanel

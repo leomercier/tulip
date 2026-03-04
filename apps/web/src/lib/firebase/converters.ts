@@ -152,6 +152,7 @@ export const runtimeConverter: FirestoreDataConverter<Runtime> = {
       dropletId: d.dropletId ?? 0,
       hostname: d.hostname ?? d.subdomain ?? "",
       region: d.region ?? "",
+      ipv4: d.ipv4 ?? null,
       status: d.status,
       subdomain: d.subdomain ?? "",
       createdAt: fromTs(d.createdAt),

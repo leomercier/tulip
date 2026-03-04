@@ -38,10 +38,10 @@ export default function AppOverviewPage() {
     <div className="p-8 max-w-4xl mx-auto space-y-8 animate-fade-in">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold text-zinc-100">
+        <h1 className="text-2xl font-semibold text-gray-900">
           {org ? `${org.name}` : "Welcome to Tulip"}
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-sm text-gray-500">
           Manage your isolated agent runtime from here.
         </p>
       </div>
@@ -53,23 +53,23 @@ export default function AppOverviewPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Plug className="w-4 h-4 text-zinc-400" />
-                <span className="text-sm font-medium text-zinc-200">Slack</span>
+                <Plug className="w-4 h-4 text-gray-400" />
+                <span className="text-sm font-medium text-gray-800">Slack</span>
               </div>
               {slack ? (
-                <span className="inline-flex items-center gap-1.5 text-xs text-green-400">
+                <span className="inline-flex items-center gap-1.5 text-xs text-green-600">
                   <CheckCircle2 className="w-3.5 h-3.5" /> Connected
                 </span>
               ) : (
-                <span className="text-xs text-zinc-600">Not connected</span>
+                <span className="text-xs text-gray-400">Not connected</span>
               )}
             </div>
           </CardHeader>
           <CardContent>
             {slack ? (
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-gray-600">
                 Team connected ·{" "}
-                <span className="text-zinc-500">
+                <span className="text-gray-500">
                   {formatRelativeTime(slack.installedAt)}
                 </span>
               </p>
@@ -89,8 +89,8 @@ export default function AppOverviewPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Cpu className="w-4 h-4 text-zinc-400" />
-                <span className="text-sm font-medium text-zinc-200">Runtime</span>
+                <Cpu className="w-4 h-4 text-gray-400" />
+                <span className="text-sm font-medium text-gray-800">Runtime</span>
               </div>
               <StatusBadge status={runtime?.status ?? "not_provisioned"} />
             </div>
@@ -98,11 +98,11 @@ export default function AppOverviewPage() {
           <CardContent>
             {runtime ? (
               <div className="space-y-1">
-                <p className="text-xs font-mono text-zinc-500">
+                <p className="text-xs font-mono text-gray-500">
                   {runtime.instanceId}
                 </p>
                 {runtime.lastHeartbeatAt && (
-                  <p className="text-xs text-zinc-600">
+                  <p className="text-xs text-gray-400">
                     Last seen {formatRelativeTime(runtime.lastHeartbeatAt)}
                   </p>
                 )}
@@ -123,7 +123,7 @@ export default function AppOverviewPage() {
       {!allDone && (
         <Card>
           <CardHeader>
-            <h2 className="text-sm font-medium text-zinc-200">Getting started</h2>
+            <h2 className="text-sm font-medium text-gray-800">Getting started</h2>
           </CardHeader>
           <CardContent className="space-y-4">
             {steps.map((step, i) => (
@@ -131,27 +131,27 @@ export default function AppOverviewPage() {
                 <div className="flex items-start gap-4 group py-1">
                   <div className="mt-0.5">
                     {step.done ? (
-                      <CheckCircle2 className="w-5 h-5 text-green-400" />
+                      <CheckCircle2 className="w-5 h-5 text-green-600" />
                     ) : (
-                      <Circle className="w-5 h-5 text-zinc-700 group-hover:text-zinc-500 transition-colors" />
+                      <Circle className="w-5 h-5 text-gray-300 group-hover:text-gray-500 transition-colors" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p
                       className={`text-sm font-medium ${
                         step.done
-                          ? "text-zinc-500 line-through"
-                          : "text-zinc-200 group-hover:text-tulip-300 transition-colors"
+                          ? "text-gray-400 line-through"
+                          : "text-gray-800 group-hover:text-gray-900 transition-colors"
                       }`}
                     >
                       {i + 1}. {step.label}
                     </p>
-                    <p className="text-xs text-zinc-600 mt-0.5">
+                    <p className="text-xs text-gray-400 mt-0.5">
                       {step.description}
                     </p>
                   </div>
                   {!step.done && (
-                    <ArrowRight className="w-4 h-4 text-zinc-700 group-hover:text-zinc-400 transition-colors mt-0.5 shrink-0" />
+                    <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors mt-0.5 shrink-0" />
                   )}
                 </div>
               </Link>
@@ -162,20 +162,20 @@ export default function AppOverviewPage() {
 
       {/* All done state */}
       {allDone && runtime?.status === "ready" && (
-        <Card className="border-green-800/50 bg-green-950/20">
+        <Card className="border-green-200 bg-green-50">
           <CardContent className="flex items-center gap-4 py-5">
-            <CheckCircle2 className="w-6 h-6 text-green-400 shrink-0" />
+            <CheckCircle2 className="w-6 h-6 text-green-600 shrink-0" />
             <div>
-              <p className="text-sm font-medium text-zinc-200">
+              <p className="text-sm font-medium text-gray-800">
                 Your runtime is live
               </p>
-              <p className="text-xs text-zinc-500 mt-0.5">
+              <p className="text-xs text-gray-500 mt-0.5">
                 Agent accessible at{" "}
                 <a
                   href={`https://${runtime.subdomain}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono text-tulip-400 hover:underline"
+                  className="font-mono text-gray-900 hover:underline"
                 >
                   {runtime.subdomain}
                 </a>

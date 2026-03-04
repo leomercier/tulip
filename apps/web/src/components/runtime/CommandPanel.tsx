@@ -40,10 +40,10 @@ const COMMANDS: Array<{ type: CommandType; label: string; icon: React.ElementTyp
 ];
 
 const STATUS_STYLES: Record<RuntimeCommand["status"], string> = {
-  queued: "text-zinc-500",
-  running: "text-blue-400",
-  done: "text-green-400",
-  error: "text-red-400",
+  queued: "text-gray-400",
+  running: "text-blue-600",
+  done: "text-green-600",
+  error: "text-red-600",
 };
 
 const STATUS_ICONS: Record<RuntimeCommand["status"], React.ElementType> = {
@@ -93,7 +93,7 @@ export function CommandPanel({ instanceId, commands }: CommandPanelProps) {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <h3 className="text-sm font-medium text-zinc-200">Commands</h3>
+          <h3 className="text-sm font-medium text-gray-800">Commands</h3>
         </CardHeader>
         <CardContent className="space-y-2">
           {COMMANDS.map(({ type, label, icon: Icon, description }) => (
@@ -102,10 +102,10 @@ export function CommandPanel({ instanceId, commands }: CommandPanelProps) {
               className="flex items-center justify-between gap-4 py-1.5"
             >
               <div className="flex items-start gap-3 min-w-0">
-                <Icon className="w-4 h-4 text-zinc-500 mt-0.5 shrink-0" />
+                <Icon className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-sm text-zinc-200">{label}</p>
-                  <p className="text-xs text-zinc-600 truncate">{description}</p>
+                  <p className="text-sm text-gray-800">{label}</p>
+                  <p className="text-xs text-gray-400 truncate">{description}</p>
                 </div>
               </div>
               <Button
@@ -125,7 +125,7 @@ export function CommandPanel({ instanceId, commands }: CommandPanelProps) {
       {commands.length > 0 && (
         <Card>
           <CardHeader>
-            <h3 className="text-sm font-medium text-zinc-200">Command history</h3>
+            <h3 className="text-sm font-medium text-gray-800">Command history</h3>
           </CardHeader>
           <CardContent className="space-y-1 py-2">
             {commands.slice(0, 10).map((cmd) => {
@@ -139,10 +139,10 @@ export function CommandPanel({ instanceId, commands }: CommandPanelProps) {
                       cmd.status === "running" && "animate-spin"
                     )}
                   />
-                  <span className="flex-1 text-xs font-mono text-zinc-400">
+                  <span className="flex-1 text-xs font-mono text-gray-500">
                     {cmd.type}
                   </span>
-                  <span className="text-xs text-zinc-700">
+                  <span className="text-xs text-gray-400">
                     {formatRelativeTime(cmd.createdAt)}
                   </span>
                 </div>

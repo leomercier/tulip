@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Flower2,
   LayoutDashboard,
   Plug,
   Cpu,
@@ -20,6 +19,32 @@ import { signOut } from "@/lib/hooks/useAuth";
 import type { User } from "firebase/auth";
 import type { Org } from "@tulip/types";
 import { useState } from "react";
+
+function TulipLogo({ className }: { className?: string }) {
+  return (
+    <svg
+      height="26"
+      viewBox="0 0 178 160"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden
+    >
+      <path
+        d="M158.33 33.6721L88.1205 103.882L18.6271 34.3886L34.3885 18.6272L77.3741 61.6128V6.10352e-05H100.3V61.6128L143.285 18.6272L158.33 33.6721Z"
+        fill="currentColor"
+      />
+      <path
+        d="M0 77.3742V99.5834H62.3292L18.6271 143.285L34.3885 159.047L79.5234 113.912L42.9856 77.3742H0Z"
+        fill="currentColor"
+      />
+      <path
+        d="M136.838 77.3742L99.2251 114.987L143.285 159.047L159.047 143.285L115.345 99.5834H177.674V77.3742H136.838Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
 
 const NAV_ITEMS = [
   { href: "/app", label: "Overview", icon: LayoutDashboard, exact: true },
@@ -53,39 +78,36 @@ export function Sidebar({ user, orgs, currentOrg, onSwitchOrg, isSuperAdmin }: S
   }
 
   return (
-    <aside className="flex flex-col w-60 min-h-screen border-r border-zinc-800 bg-zinc-950/80 backdrop-blur">
+    <aside className="flex flex-col w-56 min-h-screen border-r border-gray-200 bg-white">
       {/* Logo + org switcher */}
-      <div className="border-b border-zinc-800">
-        <div className="flex items-center gap-3 px-5 py-4">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-tulip-600/20 ring-1 ring-tulip-500/30 shrink-0">
-            <Flower2 className="w-4 h-4 text-tulip-400" />
-          </div>
-          <p className="text-sm font-semibold text-zinc-100 truncate">Tulip</p>
+      <div className="px-5 py-5 border-b border-gray-200">
+        <div className="flex items-center gap-2.5">
+          <TulipLogo className="text-gray-900 shrink-0" />
+          <span className="text-sm font-semibold text-gray-900">Tulip</span>
         </div>
 
-        {/* Org switcher button */}
-        <div className="px-3 pb-3 relative">
+        {/* Org switcher */}
+        <div className="mt-3 relative">
           <button
             onClick={() => setOrgPickerOpen((o) => !o)}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 transition-colors text-left"
+            className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors text-left"
           >
-            <Building2 className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-            <span className="flex-1 min-w-0 text-xs font-medium text-zinc-300 truncate">
+            <Building2 className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+            <span className="flex-1 min-w-0 text-xs font-medium text-gray-700 truncate">
               {currentOrg?.name ?? "No organisation"}
             </span>
             {orgs.length > 1 && (
               <ChevronDown
                 className={cn(
-                  "w-3.5 h-3.5 text-zinc-600 shrink-0 transition-transform",
+                  "w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform",
                   orgPickerOpen && "rotate-180"
                 )}
               />
             )}
           </button>
 
-          {/* Org picker dropdown */}
           {orgPickerOpen && orgs.length > 1 && (
-            <div className="absolute left-3 right-3 top-full mt-1 z-50 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl overflow-hidden">
+            <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
               {orgs.map((org) => (
                 <button
                   key={org.id}
@@ -93,16 +115,16 @@ export function Sidebar({ user, orgs, currentOrg, onSwitchOrg, isSuperAdmin }: S
                     onSwitchOrg(org.id);
                     setOrgPickerOpen(false);
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-zinc-800 transition-colors text-sm"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-gray-50 transition-colors text-sm"
                 >
-                  <div className="w-6 h-6 rounded-md bg-tulip-600/20 ring-1 ring-tulip-500/20 flex items-center justify-center shrink-0">
-                    <span className="text-xs font-bold text-tulip-400">
+                  <div className="w-5 h-5 rounded bg-gray-900 flex items-center justify-center shrink-0">
+                    <span className="text-xs font-bold text-white">
                       {org.name[0]?.toUpperCase()}
                     </span>
                   </div>
-                  <span className="flex-1 min-w-0 text-zinc-200 truncate">{org.name}</span>
+                  <span className="flex-1 min-w-0 text-gray-800 truncate">{org.name}</span>
                   {org.id === currentOrg?.id && (
-                    <Check className="w-3.5 h-3.5 text-tulip-400 shrink-0" />
+                    <Check className="w-3.5 h-3.5 text-gray-600 shrink-0" />
                   )}
                 </button>
               ))}
@@ -112,68 +134,62 @@ export function Sidebar({ user, orgs, currentOrg, onSwitchOrg, isSuperAdmin }: S
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5">
+      <nav className="flex-1 px-3 py-3 space-y-0.5">
         {NAV_ITEMS.map(({ href, label, icon: Icon, exact }) => (
           <Link
             key={href}
             href={href}
             onClick={() => setOrgPickerOpen(false)}
             className={cn(
-              "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+              "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
               isActive(href, exact)
-                ? "bg-zinc-800 text-zinc-100"
-                : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50"
+                ? "bg-gray-100 text-gray-900 font-medium"
+                : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
             )}
           >
-            <Icon
-              className={cn(
-                "w-4 h-4 shrink-0",
-                isActive(href, exact) ? "text-tulip-400" : "text-zinc-500"
-              )}
-            />
+            <Icon className="w-4 h-4 shrink-0" />
             {label}
           </Link>
         ))}
 
-        {/* Super admin link */}
         {isSuperAdmin && (
           <Link
             href="/admin"
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-red-500 hover:text-red-300 hover:bg-zinc-800/50 transition-colors mt-2"
+            className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors mt-2"
           >
-            <ShieldAlert className="w-4 h-4 shrink-0 text-red-500" />
+            <ShieldAlert className="w-4 h-4 shrink-0" />
             Admin
           </Link>
         )}
       </nav>
 
       {/* User */}
-      <div className="px-3 py-4 border-t border-zinc-800">
-        <div className="flex items-center gap-3 px-3 py-2">
+      <div className="px-3 py-4 border-t border-gray-200">
+        <div className="flex items-center gap-3 px-2 py-2">
           {user.photoURL ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={user.photoURL}
               alt={user.displayName ?? "User"}
-              className="w-7 h-7 rounded-full ring-1 ring-zinc-700"
+              className="w-7 h-7 rounded-full ring-1 ring-gray-200 shrink-0"
             />
           ) : (
-            <div className="w-7 h-7 rounded-full bg-tulip-600 flex items-center justify-center text-xs font-medium text-white">
+            <div className="w-7 h-7 rounded-full bg-gray-900 flex items-center justify-center text-xs font-medium text-white shrink-0">
               {(user.displayName ?? user.email ?? "U")[0]?.toUpperCase()}
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-zinc-200 truncate">
+            <p className="text-xs font-medium text-gray-800 truncate">
               {user.displayName ?? user.email}
             </p>
             {user.displayName && (
-              <p className="text-xs text-zinc-600 truncate">{user.email}</p>
+              <p className="text-xs text-gray-400 truncate">{user.email}</p>
             )}
           </div>
         </div>
         <button
           onClick={handleSignOut}
-          className="flex w-full items-center gap-3 px-3 py-2 rounded-lg text-sm text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800/50 transition-colors mt-0.5"
+          className="flex w-full items-center gap-3 px-2 py-2 rounded-md text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors"
         >
           <LogOut className="w-4 h-4 shrink-0" />
           Sign out

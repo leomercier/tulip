@@ -2,12 +2,12 @@ import { cn } from "@/lib/utils";
 import type { RuntimeStatus } from "@tulip/types";
 
 const STATUS_STYLES: Record<RuntimeStatus, string> = {
-  not_provisioned: "bg-zinc-800 text-zinc-400 border-zinc-700",
-  provisioning: "bg-yellow-900/40 text-yellow-400 border-yellow-700/50",
-  booting: "bg-blue-900/40 text-blue-400 border-blue-700/50",
-  ready: "bg-green-900/40 text-green-400 border-green-700/50",
-  error: "bg-red-900/40 text-red-400 border-red-700/50",
-  deleting: "bg-orange-900/40 text-orange-400 border-orange-700/50",
+  not_provisioned: "bg-gray-100 text-gray-600 border-gray-200",
+  provisioning: "bg-amber-50 text-amber-700 border-amber-200",
+  booting: "bg-blue-50 text-blue-700 border-blue-200",
+  ready: "bg-green-50 text-green-700 border-green-200",
+  error: "bg-red-50 text-red-700 border-red-200",
+  deleting: "bg-orange-50 text-orange-700 border-orange-200",
 };
 
 const STATUS_LABELS: Record<RuntimeStatus, string> = {
@@ -20,12 +20,12 @@ const STATUS_LABELS: Record<RuntimeStatus, string> = {
 };
 
 const STATUS_DOT: Record<RuntimeStatus, string> = {
-  not_provisioned: "bg-zinc-500",
-  provisioning: "bg-yellow-400 animate-pulse",
-  booting: "bg-blue-400 animate-pulse",
-  ready: "bg-green-400",
-  error: "bg-red-400",
-  deleting: "bg-orange-400 animate-pulse",
+  not_provisioned: "bg-gray-400",
+  provisioning: "bg-amber-500 animate-pulse",
+  booting: "bg-blue-500 animate-pulse",
+  ready: "bg-green-500",
+  error: "bg-red-500",
+  deleting: "bg-orange-500 animate-pulse",
 };
 
 interface StatusBadgeProps {
@@ -56,10 +56,10 @@ interface BadgeProps {
 
 export function Badge({ children, variant = "default", className }: BadgeProps) {
   const variants = {
-    default: "bg-zinc-800 text-zinc-300 border-zinc-700",
-    outline: "bg-transparent text-zinc-400 border-zinc-700",
-    success: "bg-green-900/40 text-green-400 border-green-700/50",
-    warning: "bg-yellow-900/40 text-yellow-400 border-yellow-700/50",
+    default: "bg-gray-100 text-gray-700 border-gray-200",
+    outline: "bg-transparent text-gray-600 border-gray-300",
+    success: "bg-green-50 text-green-700 border-green-200",
+    warning: "bg-amber-50 text-amber-700 border-amber-200",
   };
 
   return (
