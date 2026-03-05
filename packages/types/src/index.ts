@@ -193,6 +193,8 @@ export interface InferenceConfig {
   systemPrompt: string;
   timeoutMs: number;
   allowedTools: string[];
+  /** Optional API key for the inference provider (e.g. Fireworks) */
+  apiKey?: string;
 }
 
 // ─── Agent Heartbeat ──────────────────────────────────────────────────────────
@@ -239,6 +241,8 @@ export interface BootstrapResponse {
   openclaw: {
     image: string;
     env: Record<string, string>;
+    /** JSON string for /root/.openclaw/openclaw.json inside the container */
+    config?: string;
   };
   inference: InferenceConfig;
 }

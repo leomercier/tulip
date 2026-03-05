@@ -8,6 +8,7 @@ import { createTunnel } from "@/lib/cloudflare";
 const ENCRYPTION_KEY = process.env.TOKEN_ENCRYPTION_KEY ?? "";
 const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE ?? "ghcr.io/tulipai/openclaw:latest";
 const RUNTIME_BASE_DOMAIN = process.env.NEXT_PUBLIC_RUNTIME_BASE_DOMAIN ?? "agents.tulip.ai";
+const FIREWORKS_API_KEY = process.env.FIREWORKS_API_KEY ?? "";
 
 function getEncryptionKey(): Buffer {
   if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length !== 64) {
@@ -68,11 +69,12 @@ export async function POST(request: NextRequest) {
   const inference: InferenceConfig = inferenceDoc.exists
     ? (inferenceDoc.data() as InferenceConfig)
     : {
-        modelProvider: "anthropic",
-        modelId: "claude-sonnet-4-6",
+        modelProvider: "fireworks",
+        modelId: "accounts/fireworks/models/kimi-k2.5",
         systemPrompt: "You are a helpful AI assistant. Be concise, accurate, and friendly.",
         timeoutMs: 30000,
         allowedTools: ["web_search", "code_execution"],
+        apiKey: FIREWORKS_API_KEY,
       };
 
   // Create or reuse Cloudflare tunnel
@@ -107,6 +109,63 @@ export async function POST(request: NextRequest) {
     ...(dropletMeta?.ipv4 ? { ipv4: dropletMeta.ipv4 } : {}),
   });
 
+  const openclawEnv: Record<string, string> = {
+    SLACK_BOT_TOKEN: slackBotToken,
+    INSTANCE_ID: instanceId,
+    ORG_ID: orgId,
+    MODEL_ID: inference.modelId,
+    SYSTEM_PROMPT: inference.systemPrompt,
+  };
+
+  let openclawConfig: string | undefined;
+  if (inference.modelProvider === "fireworks") {
+    const apiKey = inference.apiKey || FIREWORKS_API_KEY;
+    openclawEnv.FIREWORKS_API_KEY = apiKey;
+    openclawConfig = JSON.stringify({
+      auth: {
+        profiles: {
+          "fireworks:default": {
+            provider: "fireworks",
+            mode: "api_key",
+            apiKeyEnv: "FIREWORKS_API_KEY",
+          },
+        },
+      },
+      models: {
+        mode: "merge",
+        providers: {
+          fireworks: {
+            baseUrl: "https://api.fireworks.ai/inference/v1",
+            api: "openai-completions",
+            models: [
+              {
+                id: inference.modelId,
+                name: "Kimi K2.5",
+                contextWindow: 200000,
+                maxTokens: 8192,
+                reasoning: false,
+                input: ["text"],
+              },
+            ],
+          },
+        },
+      },
+      agents: {
+        defaults: {
+          model: {
+            primary: `fireworks/${inference.modelId}`,
+          },
+          maxConcurrent: 4,
+        },
+      },
+      gateway: {
+        port: 18791,
+        mode: "local",
+        bind: "0.0.0.0",
+      },
+    });
+  }
+
   const response: BootstrapResponse = {
     instanceId,
     hostname,
@@ -114,13 +173,8 @@ export async function POST(request: NextRequest) {
     cloudflare: { tunnelToken: cloudflareTunnelToken },
     openclaw: {
       image: OPENCLAW_IMAGE,
-      env: {
-        SLACK_BOT_TOKEN: slackBotToken,
-        INSTANCE_ID: instanceId,
-        ORG_ID: orgId,
-        MODEL_ID: inference.modelId,
-        SYSTEM_PROMPT: inference.systemPrompt,
-      },
+      env: openclawEnv,
+      config: openclawConfig,
     },
     inference,
   };

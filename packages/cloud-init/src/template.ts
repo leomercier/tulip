@@ -93,6 +93,19 @@ write_files:
       printf 'PORT=18791\\nBIND_HOST=0.0.0.0\\nINSTANCE_ID=%s\\n' "$INSTANCE_ID" > /opt/tulip/openclaw/.env
       echo "$RESP" | jq -r '.openclaw.env | to_entries[] | .key + "=" + .value' >> /opt/tulip/openclaw/.env
 
+      # Write openclaw.json config if provided by bootstrap
+      OPENCLAW_CONFIG=$(echo "$RESP" | jq -r '.openclaw.config // empty')
+      if [ -n "$OPENCLAW_CONFIG" ]; then
+        mkdir -p /opt/tulip/openclaw
+        printf '%s' "$OPENCLAW_CONFIG" > /opt/tulip/openclaw/openclaw.json
+        chmod 600 /opt/tulip/openclaw/openclaw.json
+        OPENCLAW_CONFIG_MOUNT="-v /opt/tulip/openclaw/openclaw.json:/root/.openclaw/openclaw.json"
+        OPENCLAW_EXTRA_ARGS=""
+      else
+        OPENCLAW_CONFIG_MOUNT=""
+        OPENCLAW_EXTRA_ARGS="--allow-unconfigured"
+      fi
+
       cat > /etc/systemd/system/openclaw.service <<SYSTEMD_EOF
       [Unit]
       Description=OpenClaw AI Runtime
@@ -106,7 +119,7 @@ write_files:
       RestartSec=5
       ExecStartPre=-/usr/bin/docker stop openclaw
       ExecStartPre=-/usr/bin/docker rm openclaw
-      ExecStart=/usr/bin/docker run --name openclaw --env-file /opt/tulip/openclaw/.env -p 127.0.0.1:\${OPENCLAW_PORT}:\${OPENCLAW_PORT} \${OPENCLAW_IMG} openclaw gateway --port \${OPENCLAW_PORT} --allow-unconfigured
+      ExecStart=/usr/bin/docker run --name openclaw --env-file /opt/tulip/openclaw/.env -p 127.0.0.1:\${OPENCLAW_PORT}:\${OPENCLAW_PORT} \${OPENCLAW_IMG} openclaw gateway --port \${OPENCLAW_PORT} --allow-unconfigured $OPENCLAW_EXTRA_ARGS
       ExecStop=/usr/bin/docker stop openclaw
       TimeoutStopSec=30
 
