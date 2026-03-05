@@ -18,7 +18,7 @@ write_files:
       ORG_ID={{ORG_ID}}
       INSTANCE_ID={{INSTANCE_ID}}
       OPENCLAW_IMAGE={{OPENCLAW_IMAGE}}
-      OPENCLAW_PORT=18789
+      OPENCLAW_PORT=18793
 
   - path: /opt/tulip/bootstrap.sh
     permissions: "0755"
@@ -90,7 +90,7 @@ write_files:
       # ---- OpenClaw ----
       mkdir -p /opt/tulip/openclaw
 
-      printf 'PORT=18789\\nBIND_HOST=0.0.0.0\\nINSTANCE_ID=%s\\n' "$INSTANCE_ID" > /opt/tulip/openclaw/.env
+      printf 'PORT=18793\\nBIND_HOST=0.0.0.0\\nINSTANCE_ID=%s\\n' "$INSTANCE_ID" > /opt/tulip/openclaw/.env
       echo "$RESP" | jq -r '.openclaw.env | to_entries[] | .key + "=" + .value' >> /opt/tulip/openclaw/.env
 
       cat > /etc/systemd/system/openclaw.service <<SYSTEMD_EOF
@@ -137,7 +137,7 @@ write_files:
       INSTANCE_ID=$INSTANCE_ID
       ORG_ID=$ORG_ID
       RUNTIME_AUTH_TOKEN=$RUNTIME_AUTH_TOKEN
-      OPENCLAW_HEALTH_URL=http://127.0.0.1:18789/health
+      OPENCLAW_HEALTH_URL=http://127.0.0.1:18793/health
       HEARTBEAT_INTERVAL_SEC=30
       COMMAND_POLL_INTERVAL_SEC=15
       AGENT_EOF
