@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
 
   const instanceId = generateInstanceId();
   const bootstrapToken = randomBytes(32).toString("hex");
+  const gatewayToken = randomBytes(32).toString("hex");
   const subdomain = `${instanceId}.${RUNTIME_BASE_DOMAIN}`;
 
   // Render cloud-init using the package template
@@ -69,6 +70,7 @@ export async function POST(request: NextRequest) {
     ORG_ID: orgId,
     INSTANCE_ID: instanceId,
     OPENCLAW_IMAGE,
+    OPENCLAW_GATEWAY_TOKEN: gatewayToken,
   });
 
   // Write provisioning record
@@ -86,6 +88,7 @@ export async function POST(request: NextRequest) {
     lastError: null,
     bootstrapToken,
     bootstrapTokenExpiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+    gatewayToken,
   });
 
   // Create DigitalOcean droplet

@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
         },
       },
       gateway: {
-        port: 18791,
+        port: 18789,
         mode: "local",
         bind: "0.0.0.0",
       },

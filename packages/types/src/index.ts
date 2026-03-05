@@ -284,4 +284,6 @@ export interface CloudInitVars {
   ORG_ID: string;
   INSTANCE_ID: string;
   OPENCLAW_IMAGE: string;
+  /** 32-byte hex token used to authenticate with the OpenClaw gateway */
+  OPENCLAW_GATEWAY_TOKEN: string;
 }

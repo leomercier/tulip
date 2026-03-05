@@ -42,6 +42,9 @@ function validateVars(vars: CloudInitVars): void {
   if (!vars.OPENCLAW_IMAGE.match(/^[a-zA-Z0-9._\-/:@]+$/)) {
     throw new Error("Invalid OPENCLAW_IMAGE: contains disallowed characters");
   }
+  if (!vars.OPENCLAW_GATEWAY_TOKEN.match(/^[a-f0-9]{64}$/)) {
+    throw new Error("Invalid OPENCLAW_GATEWAY_TOKEN: must be 32-byte hex (64 hex chars)");
+  }
 }
 
 export type { CloudInitVars };
