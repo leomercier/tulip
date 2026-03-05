@@ -16,6 +16,10 @@ COPY packages/cloud-init/package.json ./packages/cloud-init/
 COPY packages/runtime-agent/package.json ./packages/runtime-agent/
 COPY functions/package.json ./functions/
 
+# Required by the prepare hook (setup-hooks.js) which runs during pnpm install.
+# The script exits cleanly when .git/hooks is absent (i.e. in Docker).
+COPY scripts ./scripts
+
 RUN pnpm install --frozen-lockfile
 
 # ---- Build ----
