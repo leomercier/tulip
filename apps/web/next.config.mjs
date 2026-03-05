@@ -1,9 +1,30 @@
 import path from "path";
 import { fileURLToPath } from "url";
+import { execSync } from "child_process";
+import { readFileSync } from "fs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+let buildHash = "dev";
+try {
+  buildHash = execSync("git rev-parse --short HEAD", { stdio: ["pipe", "pipe", "pipe"] })
+    .toString()
+    .trim();
+} catch {}
+
+let buildNumber = 0;
+try {
+  const versionData = JSON.parse(
+    readFileSync(path.join(__dirname, "../../build-number.json"), "utf8")
+  );
+  buildNumber = versionData.buildNumber;
+} catch {}
+
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_BUILD_HASH: buildHash,
+    NEXT_PUBLIC_BUILD_NUMBER: String(buildNumber),
+  },
   output: "standalone",
   experimental: {
     // Set tracing root to the monorepo root so standalone output mirrors the
