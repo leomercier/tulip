@@ -9,6 +9,7 @@ const ENCRYPTION_KEY = process.env.TOKEN_ENCRYPTION_KEY ?? "";
 const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE ?? "ghcr.io/tulipai/openclaw:latest";
 const RUNTIME_BASE_DOMAIN = process.env.NEXT_PUBLIC_RUNTIME_BASE_DOMAIN ?? "agents.tulip.ai";
 const FIREWORKS_API_KEY = process.env.FIREWORKS_API_KEY ?? "";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
 function getEncryptionKey(): Buffer {
   if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length !== 64) {
@@ -117,26 +118,33 @@ export async function POST(request: NextRequest) {
     SYSTEM_PROMPT: inference.systemPrompt,
   };
 
+  // Add runtimeAuthToken to OpenClaw env so it can authenticate with our proxy
+  openclawEnv.RUNTIME_AUTH_TOKEN = runtimeAuthToken;
+
   let openclawConfig: string | undefined;
   if (inference.modelProvider === "fireworks") {
-    const apiKey = inference.apiKey || FIREWORKS_API_KEY;
-    openclawEnv.FIREWORKS_API_KEY = apiKey;
+    // Proxy base URL: our control plane routes through billing before Fireworks
+    const proxyBaseUrl = `${APP_URL}/api/inference/${instanceId}/v1`;
+
     openclawConfig = JSON.stringify({
       auth: {
         profiles: {
-          "fireworks:default": {
-            provider: "fireworks",
+          "tulip:default": {
+            provider: "openai",
             mode: "api_key",
-            apiKeyEnv: "FIREWORKS_API_KEY",
+            // OpenClaw sends this as "Authorization: Bearer <value>"
+            apiKeyEnv: "RUNTIME_AUTH_TOKEN",
           },
         },
       },
       models: {
         mode: "merge",
         providers: {
-          fireworks: {
-            baseUrl: "https://api.fireworks.ai/inference/v1",
+          tulip: {
+            // All inference calls go through our billing proxy
+            baseUrl: proxyBaseUrl,
             api: "openai-completions",
+            authProfile: "tulip:default",
             models: [
               {
                 id: inference.modelId,
@@ -153,13 +161,13 @@ export async function POST(request: NextRequest) {
       agents: {
         defaults: {
           model: {
-            primary: `fireworks/${inference.modelId}`,
+            primary: `tulip/${inference.modelId}`,
           },
           maxConcurrent: 4,
         },
       },
       gateway: {
-        port: 18791,
+        port: 18789,
         mode: "local",
         bind: "0.0.0.0",
       },

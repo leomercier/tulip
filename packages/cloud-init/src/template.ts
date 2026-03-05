@@ -18,7 +18,8 @@ write_files:
       ORG_ID={{ORG_ID}}
       INSTANCE_ID={{INSTANCE_ID}}
       OPENCLAW_IMAGE={{OPENCLAW_IMAGE}}
-      OPENCLAW_PORT=18791
+      OPENCLAW_PORT=18789
+      OPENCLAW_GATEWAY_TOKEN={{OPENCLAW_GATEWAY_TOKEN}}
 
   - path: /opt/tulip/bootstrap.sh
     permissions: "0755"
@@ -119,7 +120,7 @@ write_files:
       RestartSec=5
       ExecStartPre=-/usr/bin/docker stop openclaw
       ExecStartPre=-/usr/bin/docker rm openclaw
-      ExecStart=/usr/bin/docker run --name openclaw --env-file /opt/tulip/openclaw/.env -p 127.0.0.1:\${OPENCLAW_PORT}:\${OPENCLAW_PORT} \${OPENCLAW_IMG} openclaw gateway --port \${OPENCLAW_PORT} --allow-unconfigured $OPENCLAW_EXTRA_ARGS
+      ExecStart=/usr/bin/docker run --name openclaw --restart unless-stopped --env-file /opt/tulip/openclaw/.env -e OPENCLAW_GATEWAY_PORT=\${OPENCLAW_PORT} -e OPENCLAW_GATEWAY_TOKEN=\${OPENCLAW_GATEWAY_TOKEN} -p 0.0.0.0:\${OPENCLAW_PORT}:\${OPENCLAW_PORT} $OPENCLAW_CONFIG_MOUNT \${OPENCLAW_IMG} $OPENCLAW_EXTRA_ARGS
       ExecStop=/usr/bin/docker stop openclaw
       TimeoutStopSec=30
 
@@ -150,7 +151,7 @@ write_files:
       INSTANCE_ID=$INSTANCE_ID
       ORG_ID=$ORG_ID
       RUNTIME_AUTH_TOKEN=$RUNTIME_AUTH_TOKEN
-      OPENCLAW_HEALTH_URL=http://127.0.0.1:18791/health
+      OPENCLAW_HEALTH_URL=http://127.0.0.1:18789
       HEARTBEAT_INTERVAL_SEC=30
       COMMAND_POLL_INTERVAL_SEC=15
       AGENT_EOF

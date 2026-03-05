@@ -13,6 +13,8 @@ import {
   ChevronDown,
   Check,
   Building2,
+  BarChart2,
+  Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { signOut } from "@/lib/hooks/useAuth";
@@ -50,6 +52,8 @@ const NAV_ITEMS = [
   { href: "/app", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/app/integrations", label: "Integrations", icon: Plug },
   { href: "/app/runtime", label: "Runtime", icon: Cpu },
+  { href: "/app/inference", label: "Inference", icon: Layers },
+  { href: "/app/usage", label: "Usage", icon: BarChart2 },
   { href: "/app/org", label: "Members", icon: Users },
   { href: "/app/billing", label: "Billing", icon: CreditCard },
 ];
