@@ -120,7 +120,7 @@ write_files:
       RestartSec=5
       ExecStartPre=-/usr/bin/docker stop openclaw
       ExecStartPre=-/usr/bin/docker rm openclaw
-      ExecStart=/usr/bin/docker run --name openclaw --restart unless-stopped --env-file /opt/tulip/openclaw/.env -e OPENCLAW_GATEWAY_PORT=\${OPENCLAW_PORT} -e OPENCLAW_GATEWAY_TOKEN=\${OPENCLAW_GATEWAY_TOKEN} -p 0.0.0.0:\${OPENCLAW_PORT}:\${OPENCLAW_PORT} $OPENCLAW_CONFIG_MOUNT \${OPENCLAW_IMG}
+      ExecStart=/usr/bin/docker run --name openclaw --restart unless-stopped --env-file /opt/tulip/openclaw/.env -e OPENCLAW_GATEWAY_PORT=\${OPENCLAW_PORT} -e OPENCLAW_GATEWAY_TOKEN=\${OPENCLAW_GATEWAY_TOKEN} -p 0.0.0.0:\${OPENCLAW_PORT}:\${OPENCLAW_PORT} $OPENCLAW_CONFIG_MOUNT \${OPENCLAW_IMG} $OPENCLAW_EXTRA_ARGS
       ExecStop=/usr/bin/docker stop openclaw
       TimeoutStopSec=30
 
