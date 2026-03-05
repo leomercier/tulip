@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 RUN corepack enable && corepack prepare pnpm@9.13.2 --activate
 
 # ---- Install dependencies ----
@@ -16,7 +16,7 @@ COPY packages/cloud-init/package.json ./packages/cloud-init/
 COPY packages/runtime-agent/package.json ./packages/runtime-agent/
 COPY functions/package.json ./functions/
 
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # ---- Build ----
 # Extend deps so all node_modules (including per-package symlinks) are already present
@@ -30,7 +30,7 @@ COPY packages ./packages
 RUN pnpm exec turbo run build --filter=@tulip/web...
 
 # ---- Production image ----
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
