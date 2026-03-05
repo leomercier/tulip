@@ -64,7 +64,7 @@ export async function addCredits(
   amount: number,
   description: string,
   createdByUid: string | null,
-  type: "credit_grant" | "credit_purchase" | "adjustment" = "credit_grant",
+  type: import("@tulip/types").LedgerEntryType = "credit_grant",
   metadata: Record<string, unknown> = {}
 ): Promise<{ newBalance: number }> {
   const accountRef = adminDb.doc(`orgs/${orgId}/billing/account`);
