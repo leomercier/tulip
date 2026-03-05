@@ -198,7 +198,7 @@ export function Sidebar({ user, orgs, currentOrg, onSwitchOrg, isSuperAdmin, isO
 
         {/* User */}
         <div className="px-3 py-4 border-t border-gray-200">
-          <div className="flex items-center gap-3 px-2 py-2">
+          <div className="relative group flex items-center gap-3 px-2 py-2">
             {user.photoURL ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -218,6 +218,16 @@ export function Sidebar({ user, orgs, currentOrg, onSwitchOrg, isSuperAdmin, isO
               {user.displayName && (
                 <p className="text-xs text-gray-400 truncate">{user.email}</p>
               )}
+            </div>
+            {/* Version tooltip */}
+            <div className="pointer-events-none absolute bottom-full left-2 mb-1.5 hidden group-hover:block z-50">
+              <div className="bg-gray-900 text-gray-100 text-xs rounded px-2.5 py-1.5 whitespace-nowrap shadow-lg font-mono">
+                <span className="text-gray-400">build </span>
+                {process.env.NEXT_PUBLIC_BUILD_NUMBER ?? "0"}
+                <span className="text-gray-500 mx-1">·</span>
+                <span className="text-gray-300">{process.env.NEXT_PUBLIC_BUILD_HASH ?? "dev"}</span>
+              </div>
+              <div className="w-2 h-2 bg-gray-900 rotate-45 ml-3 -mt-1" />
             </div>
           </div>
           <button

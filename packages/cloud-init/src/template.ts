@@ -91,7 +91,7 @@ write_files:
       # ---- OpenClaw ----
       mkdir -p /opt/tulip/openclaw
 
-      printf 'PORT=18789\\nBIND_HOST=0.0.0.0\\nINSTANCE_ID=%s\\n' "$INSTANCE_ID" > /opt/tulip/openclaw/.env
+      printf 'PORT=18791\\nBIND_HOST=0.0.0.0\\nINSTANCE_ID=%s\\n' "$INSTANCE_ID" > /opt/tulip/openclaw/.env
       echo "$RESP" | jq -r '.openclaw.env | to_entries[] | .key + "=" + .value' >> /opt/tulip/openclaw/.env
 
       # Write openclaw.json config if provided by bootstrap
